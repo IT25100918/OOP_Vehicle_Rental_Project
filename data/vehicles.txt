@@ -1,0 +1,4 @@
+VH-1001|Toyota|Corolla|2021|4500.00|true|Comfortable sedan with AC and Bluetooth. Great for city travel.|CAR
+VH-1002|Toyota|HiAce|2020|9500.00|true|Spacious 12-seater van ideal for group tours and airport transfers.|VAN
+VH-1003|Honda|CB350|2023|2500.00|false|Sports touring bike with fuel injection. Currently under maintenance.|BIKE
+VH-1004|Suzuki|Swift|2022|3800.00|true|Compact hatchback, fuel-efficient and easy to park.|CAR

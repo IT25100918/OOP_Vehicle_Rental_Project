@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Search Vehicles — Fleet Manager</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="navbar-brand" th:href="@{/vehicles}">
+    🚘 <span>Fleet</span>Manager
+  </a>
+  <ul class="navbar-links">
+    <li><a th:href="@{/vehicles}">Inventory</a></li>
+    <li><a th:href="@{/vehicles/add}">Add Vehicle</a></li>
+    <li><a th:href="@{/vehicles/search}">Search</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-title">
+      <small>Vehicle Management</small>
+      Search Vehicles
+    </div>
+    <a th:href="@{/vehicles}" class="btn btn-secondary">← All Vehicles</a>
+  </div>
+
+  <!-- Search Panel -->
+  <form th:action="@{/vehicles/search}" method="get">
+    <div class="search-panel">
+
+      <div class="form-group">
+        <label class="form-label">Vehicle Type</label>
+        <select name="type" class="form-control">
+          <option value="">All Types</option>
+          <option value="CAR"  th:selected="${type == 'CAR'}">🚗 Car</option>
+          <option value="VAN"  th:selected="${type == 'VAN'}">🚐 Van</option>
+          <option value="BIKE" th:selected="${type == 'BIKE'}">🏍 Bike</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Max Price / Day (LKR)</label>
+        <input type="number" name="maxPrice" class="form-control"
+               th:value="${maxPrice}" placeholder="e.g. 8000" min="0" step="100"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Availability</label>
+        <select name="available" class="form-control">
+          <option value="">Any</option>
+          <option value="true"  th:selected="${available == true}">✅ Available Only</option>
+          <option value="false" th:selected="${available == false}">❌ Unavailable</option>
+        </select>
+      </div>
+
+      <div style="align-self:flex-end; padding-bottom:0;">
+        <button type="submit" class="btn btn-primary">🔍 Search</button>
+        <a th:href="@{/vehicles/search}" class="btn btn-secondary">Reset</a>
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Results count -->
+  <div th:if="${vehicles != null}" style="margin-bottom:1.25rem; font-size:0.78rem; color:var(--muted);">
+    <span th:text="${vehicles.size()}"></span> result(s) found
+  </div>
+
+  <!-- Results Grid -->
+  <div class="vehicle-grid" th:if="${vehicles != null and !vehicles.isEmpty()}">
+    <div class="vehicle-card" th:each="v : ${vehicles}">
+      <div class="card-type-bar"
+           th:classappend="${v.type == 'VAN'} ? 'van' : (${v.type == 'BIKE'} ? 'bike' : '')">
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div>
+            <div class="vehicle-icon"
+                 th:text="${v.type == 'CAR'} ? '🚗' : (${v.type == 'VAN'} ? '🚐' : '🏍')"></div>
+            <div class="vehicle-name" th:text="${v.brand + ' ' + v.model}"></div>
+            <div class="vehicle-year" th:text="${v.year}"></div>
+          </div>
+          <div>
+            <span class="badge badge-type" th:text="${v.type}"></span><br/><br/>
+            <span class="badge"
+                  th:classappend="${v.available} ? 'badge-available' : 'badge-unavailable'"
+                  th:text="${v.available} ? 'Available' : 'Unavailable'"></span>
+          </div>
+        </div>
+        <div class="vehicle-price">
+          LKR <th:block th:text="${#numbers.formatDecimal(v.rentalPricePerDay, 1, 'COMMA', 0, 'POINT')}"></th:block>
+          <span>/ day</span>
+        </div>
+        <div class="vehicle-desc" th:text="${v.description}"></div>
+        <div class="card-id" th:text="'ID: ' + ${v.id}"></div>
+      </div>
+      <div class="card-actions">
+        <a class="btn btn-secondary btn-sm" th:href="@{'/vehicles/edit/' + ${v.id}}">✏ Edit</a>
+        <form th:id="'delete-form-' + ${v.id}"
+              th:action="@{'/vehicles/delete/' + ${v.id}}"
+              method="post" style="display:inline">
+        </form>
+        <button class="btn btn-danger btn-sm"
+                th:onclick="|confirmDelete('${v.id}', '${v.brand} ${v.model}')|">
+          ✕ Remove
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Results -->
+  <div class="empty-state" th:if="${vehicles != null and vehicles.isEmpty()}">
+    <div class="icon">🔍</div>
+    <h3>No Results Found</h3>
+    <p>Try adjusting your search filters.</p>
+  </div>
+
+  <!-- Initial state (no search yet) -->
+  <div class="empty-state" th:if="${vehicles == null}">
+    <div class="icon">🚗</div>
+    <h3>Search the Fleet</h3>
+    <p>Use the filters above to find vehicles by type, price, or availability.</p>
+  </div>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
