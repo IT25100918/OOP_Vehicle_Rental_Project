@@ -1,26 +1,28 @@
 package com.vehiclerental.model;
 
-/**
- * Car — inherits from Vehicle (INHERITANCE).
- * Overrides getDisplayInfo() for POLYMORPHISM.
- */
+// Inheritance: Car extends Vehicle
 public class Car extends Vehicle {
+    private int seats;
+    private String fuelType;
 
-    public Car() {
-        super();
-        setType("CAR");
+    public Car() { super(); this.setType("car"); }
+
+    public Car(String vehicleId, String brand, String model, String plateNumber,
+               double rentPrice, String availability, String imageUrl, int seats, String fuelType) {
+        super(vehicleId, "car", brand, model, plateNumber, rentPrice, availability, imageUrl);
+        this.seats = seats;
+        this.fuelType = fuelType;
     }
 
-    public Car(String id, String brand, String model, int year,
-               double rentalPricePerDay, boolean available, String description) {
-        super(id, brand, model, year, rentalPricePerDay, available, description, "CAR");
-    }
+    public int getSeats() { return seats; }
+    public void setSeats(int seats) { this.seats = seats; }
 
+    public String getFuelType() { return fuelType; }
+    public void setFuelType(String fuelType) { this.fuelType = fuelType; }
+
+    // Polymorphism: Override display info
     @Override
     public String getDisplayInfo() {
-        return String.format("🚗 CAR | %s %s (%d) | LKR %.2f/day | %s",
-                getBrand(), getModel(), getYear(),
-                getRentalPricePerDay(),
-                isAvailable() ? "Available" : "Unavailable");
+        return getBrand() + " " + getModel() + " | " + seats + " seats | " + fuelType + " | Rs. " + getRentPrice() + "/day";
     }
 }

@@ -1,93 +1,103 @@
 package com.vehiclerental.model;
 
-/**
- * Base Vehicle class — demonstrates ENCAPSULATION.
- * All fields are private; accessed via getters/setters.
- */
-public abstract class Vehicle {
-
-    private String id;
+// Encapsulation: Vehicle base class
+public class Vehicle {
+    private String vehicleId;
+    private String type;       // "car", "bike", "van"
     private String brand;
     private String model;
-    private int year;
-    private double rentalPricePerDay;
-    private boolean available;
-    private String description;
-    private String type; // "CAR", "VAN", "BIKE"
+    private String plateNumber;
+    private double rentPrice;  // per day
+    private String availability; // "available" or "rented"
+    private String imageUrl;
+    private String location;   // "lat,lng" e.g. "6.9271,79.8612"
 
     public Vehicle() {}
 
-    public Vehicle(String id, String brand, String model, int year,
-                   double rentalPricePerDay, boolean available, String description, String type) {
-        this.id = id;
+    public Vehicle(String vehicleId, String type, String brand, String model,
+                   String plateNumber, double rentPrice, String availability, String imageUrl) {
+        this.vehicleId = vehicleId;
+        this.type = type;
         this.brand = brand;
         this.model = model;
-        this.year = year;
-        this.rentalPricePerDay = rentalPricePerDay;
-        this.available = available;
-        this.description = description;
-        this.type = type;
+        this.plateNumber = plateNumber;
+        this.rentPrice = rentPrice;
+        this.availability = availability;
+        this.imageUrl = imageUrl;
+        this.location = "";
     }
 
-    // POLYMORPHISM — subclasses override this to display differently
-    public abstract String getDisplayInfo();
-
-    // Converts vehicle to a pipe-delimited line for file storage
-    public String toFileString() {
-        return String.join("|",
-                id, brand, model,
-                String.valueOf(year),
-                String.valueOf(rentalPricePerDay),
-                String.valueOf(available),
-                description.replace("|", ";"),
-                type
-        );
+    public Vehicle(String vehicleId, String type, String brand, String model,
+                   String plateNumber, double rentPrice, String availability, String imageUrl, String location) {
+        this(vehicleId, type, brand, model, plateNumber, rentPrice, availability, imageUrl);
+        this.location = location != null ? location : "";
     }
 
-    // Factory method — parses a file line back into the correct subclass
-    public static Vehicle fromFileString(String line) {
-        String[] parts = line.split("\\|", -1);
+    // Getters & Setters (Encapsulation)
+    public String getVehicleId() { return vehicleId; }
+    public void setVehicleId(String vehicleId) { this.vehicleId = vehicleId; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
+
+    public String getPlateNumber() { return plateNumber; }
+    public void setPlateNumber(String plateNumber) { this.plateNumber = plateNumber; }
+
+    public double getRentPrice() { return rentPrice; }
+    public void setRentPrice(double rentPrice) { this.rentPrice = rentPrice; }
+
+    public String getAvailability() { return availability; }
+    public void setAvailability(String availability) { this.availability = availability; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getLocation() { return location != null ? location : ""; }
+    public void setLocation(String location) { this.location = location != null ? location : ""; }
+
+    /** Returns latitude as double, or 0 if not set */
+    public double getLat() {
+        try { if (location != null && location.contains(",")) return Double.parseDouble(location.split(",")[0].trim()); } catch (Exception ignored) {}
+        return 0;
+    }
+
+    /** Returns longitude as double, or 0 if not set */
+    public double getLng() {
+        try { if (location != null && location.contains(",")) return Double.parseDouble(location.split(",")[1].trim()); } catch (Exception ignored) {}
+        return 0;
+    }
+
+    public boolean hasLocation() {
+        return location != null && location.contains(",") && getLat() != 0;
+    }
+
+    public boolean isAvailable() {
+        return "available".equalsIgnoreCase(availability);
+    }
+
+    // Polymorphism: Can be overridden to show different display info
+    public String getDisplayInfo() {
+        return brand + " " + model + " (" + type + ") - Rs. " + rentPrice + "/day";
+    }
+
+    public String toCsv() {
+        return vehicleId + "," + type + "," + brand + "," + model + "," +
+               plateNumber + "," + rentPrice + "," + availability + "," + imageUrl + "," + getLocation();
+    }
+
+    public static Vehicle fromCsv(String csv) {
+        String[] parts = csv.split(",", -1);
         if (parts.length < 8) return null;
-
-        String id          = parts[0];
-        String brand       = parts[1];
-        String model       = parts[2];
-        int year           = Integer.parseInt(parts[3]);
-        double price       = Double.parseDouble(parts[4]);
-        boolean available  = Boolean.parseBoolean(parts[5]);
-        String description = parts[6].replace(";", "|");
-        String type        = parts[7];
-
-        return switch (type.toUpperCase()) {
-            case "CAR"  -> new Car(id, brand, model, year, price, available, description);
-            case "VAN"  -> new Van(id, brand, model, year, price, available, description);
-            case "BIKE" -> new Bike(id, brand, model, year, price, available, description);
-            default     -> null;
-        };
+        String loc = parts.length >= 9 ? parts[8] + (parts.length >= 10 ? "," + parts[9] : "") : "";
+        Vehicle v = new Vehicle(parts[0], parts[1], parts[2], parts[3], parts[4],
+                           Double.parseDouble(parts[5]), parts[6], parts[7]);
+        v.setLocation(loc);
+        return v;
     }
-
-    // --- Getters & Setters ---
-    public String getId()                          { return id; }
-    public void   setId(String id)                 { this.id = id; }
-
-    public String getBrand()                       { return brand; }
-    public void   setBrand(String brand)           { this.brand = brand; }
-
-    public String getModel()                       { return model; }
-    public void   setModel(String model)           { this.model = model; }
-
-    public int    getYear()                        { return year; }
-    public void   setYear(int year)                { this.year = year; }
-
-    public double getRentalPricePerDay()           { return rentalPricePerDay; }
-    public void   setRentalPricePerDay(double p)   { this.rentalPricePerDay = p; }
-
-    public boolean isAvailable()                   { return available; }
-    public void    setAvailable(boolean available) { this.available = available; }
-
-    public String getDescription()                 { return description; }
-    public void   setDescription(String d)         { this.description = d; }
-
-    public String getType()                        { return type; }
-    public void   setType(String type)             { this.type = type; }
 }

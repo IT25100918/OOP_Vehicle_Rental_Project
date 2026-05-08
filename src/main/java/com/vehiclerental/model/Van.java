@@ -1,26 +1,29 @@
 package com.vehiclerental.model;
 
-/**
- * Van — inherits from Vehicle (INHERITANCE).
- * Overrides getDisplayInfo() for POLYMORPHISM.
- */
+// Inheritance: Van extends Vehicle
 public class Van extends Vehicle {
+    private int capacity; // passenger/cargo capacity
+    private boolean hasAC;
 
-    public Van() {
-        super();
-        setType("VAN");
+    public Van() { super(); this.setType("van"); }
+
+    public Van(String vehicleId, String brand, String model, String plateNumber,
+               double rentPrice, String availability, String imageUrl,
+               int capacity, boolean hasAC) {
+        super(vehicleId, "van", brand, model, plateNumber, rentPrice, availability, imageUrl);
+        this.capacity = capacity;
+        this.hasAC = hasAC;
     }
 
-    public Van(String id, String brand, String model, int year,
-               double rentalPricePerDay, boolean available, String description) {
-        super(id, brand, model, year, rentalPricePerDay, available, description, "VAN");
-    }
+    public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; }
 
+    public boolean isHasAC() { return hasAC; }
+    public void setHasAC(boolean hasAC) { this.hasAC = hasAC; }
+
+    // Polymorphism: Override display info
     @Override
     public String getDisplayInfo() {
-        return String.format("🚐 VAN | %s %s (%d) | LKR %.2f/day | %s",
-                getBrand(), getModel(), getYear(),
-                getRentalPricePerDay(),
-                isAvailable() ? "Available" : "Unavailable");
+        return getBrand() + " " + getModel() + " | " + capacity + " seats | " + (hasAC ? "AC" : "No AC") + " | Rs. " + getRentPrice() + "/day";
     }
 }
