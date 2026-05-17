@@ -3,7 +3,6 @@ package com.vehiclerental.servlet;
 import com.vehiclerental.model.Booking;
 import com.vehiclerental.model.Payment;
 import com.vehiclerental.model.User;
-import com.vehiclerental.service.BookingService;
 import com.vehiclerental.service.PaymentService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
