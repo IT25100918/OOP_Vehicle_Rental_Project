@@ -1,25 +1,32 @@
 package com.vehiclerental.model;
 
+// Inheritance: OnlinePayment extends Payment
 public class OnlinePayment extends Payment {
-
-    private String transactionId;
+    private String transactionRef; // online transaction reference number
 
     public OnlinePayment() {
         super();
-        setPaymentMethod("Online");
+        this.setPaymentMethod("online");
     }
 
-    public OnlinePayment(String paymentId, String bookingId, String userId,
-                         String userName, String vehicleName, double amount,
-                         String paymentDate, String status, String transactionId) {
-        super(paymentId, bookingId, userId, userName, vehicleName,
-              amount, paymentDate, "Online", status);
-        this.transactionId = transactionId;
+    public OnlinePayment(String paymentId, String bookingId, String userId, String userName,
+                         double amount, double lateFee, double totalAmount,
+                         String status, String paymentDate, String transactionRef) {
+        super(paymentId, bookingId, userId, userName, amount, lateFee, totalAmount, "online", status, paymentDate);
+        this.transactionRef = transactionRef;
     }
 
-    public String getTransactionId() { return transactionId; }
-    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+    public String getTransactionRef() { return transactionRef; }
+    public void setTransactionRef(String transactionRef) { this.transactionRef = transactionRef; }
+
+    // Polymorphism: 2% processing fee for online payments
+    @Override
+    public double getProcessingFee() {
+        return getAmount() * 0.02;
+    }
 
     @Override
-    public String getPaymentMethod() { return "Online"; }
+    public String toCsv() {
+        return super.toCsv() + "," + (transactionRef != null ? transactionRef : "");
+    }
 }

@@ -1,135 +1,120 @@
 package com.vehiclerental.servlet;
 
-import com.vehiclerental.booking.Booking;
-import com.vehiclerental.booking.BookingService;
-import com.vehiclerental.vehicle.Vehicle;
-import com.vehiclerental.vehicle.VehicleService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import com.vehiclerental.model.Booking;
+import com.vehiclerental.model.Payment;
+import com.vehiclerental.model.User;
+import com.vehiclerental.service.PaymentService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import com.vehiclerental.customer.User;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
-@Controller
-public class PaymentController {
+import java.io.IOException;
 
-    @Autowired private PaymentService paymentService;
-    @Autowired private BookingService bookingService;
-    @Autowired private VehicleService vehicleService;
+/**
+ * PaymentServlet - handles all /payments/* routes
+ * GET  /payments          → list payments
+ * GET  /payments/pay/{id} → show payment form for a booking
+ * POST /payments/pay      → process payment
+ * GET  /payments/delete/* → delete payment (admin)
+ */
+@WebServlet("/payments/*")
+public class PaymentServlet extends HttpServlet {
 
-    @GetMapping("/payments/edit/{paymentId}")
-    public String showEditPayment(@PathVariable String paymentId, Model model, HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        model.addAttribute("user", loggedIn);
-        model.addAttribute("payment", paymentService.findById(paymentId));
-        return "payment/edit-payment";
+    private PaymentService paymentService;
+    private BookingService bookingService;
+
+    @Override
+    public void init() {
+        ApplicationContext ctx = WebApplicationContextUtils
+                .getRequiredWebApplicationContext(getServletContext());
+        this.paymentService = ctx.getBean(PaymentService.class);
+        this.bookingService = ctx.getBean(BookingService.class);
     }
 
-    @PostMapping("/payments/update")
-    public String updatePayment(
-            @RequestParam String paymentId,
-            @RequestParam String paymentMethod,
-            @RequestParam String status,
-            HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        paymentService.updatePayment(paymentId, paymentMethod, status);
-        return "redirect:/payments";
-    }
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
 
-    @GetMapping("/payments")
-    public String listPayments(Model model, HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        model.addAttribute("user", loggedIn);
-        if ("ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole())) {
-            model.addAttribute("payments", paymentService.getAllPayments());
-        } else {
-            // User sees only their own payments
-            model.addAttribute("payments", paymentService.getAllPayments().stream()
-                    .filter(p -> loggedIn.getUserId().equals(p.getUserId()))
-                    .collect(java.util.stream.Collectors.toList()));
-        }
-        return "payment/index";
-    }
+        String pathInfo = req.getPathInfo();
+        HttpSession session = req.getSession();
+        User user = (User) session.getAttribute("user");
 
-    @GetMapping("/payments/add")
-    public String showAddPayment(@RequestParam(required = false) String bookingId,
-                                 Model model, HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        model.addAttribute("user", loggedIn);
-        model.addAttribute("bookings", bookingService.getAllBookings());
-        if (bookingId != null) {
-            model.addAttribute("selectedBookingId", bookingId);
-            Booking b = bookingService.findById(bookingId);
-            if (b != null) {
-                model.addAttribute("selectedBooking", b);
-                // Pass vehicle so image shows on payment page
-                Vehicle v = vehicleService.findById(b.getVehicleId());
-                if (v != null) model.addAttribute("selectedVehicle", v);
+        if (user == null) { resp.sendRedirect(req.getContextPath() + "/login"); return; }
+        req.setAttribute("user", user);
+
+        if (pathInfo == null || pathInfo.equals("/")) {
+            String sortBy = req.getParameter("sortBy");
+            if (sortBy == null) sortBy = "date";
+            req.setAttribute("sortBy", sortBy);
+
+            if ("admin".equalsIgnoreCase(user.getUserType())) {
+                req.setAttribute("payments", paymentService.getAllPayments(sortBy));
+                req.setAttribute("totalRevenue", paymentService.getTotalRevenue());
+                req.setAttribute("overdueBookings",
+                        paymentService.getOverdueBookings(bookingService.getAllBookings()));
+            } else {
+                req.setAttribute("payments", paymentService.getPaymentsByUser(user.getUserId()));
+                req.setAttribute("overdueBookings",
+                        paymentService.getOverdueBookings(bookingService.getBookingsByUser(user.getUserId())));
             }
+            req.setAttribute("paymentService", paymentService);
+            req.getRequestDispatcher("/WEB-INF/jsp/payments/list.jsp").forward(req, resp);
+
+        } else if (pathInfo.startsWith("/pay/")) {
+            String bookingId = pathInfo.substring("/pay/".length());
+            Booking booking = bookingService.findById(bookingId);
+            if (booking == null) { resp.sendRedirect(req.getContextPath() + "/bookings"); return; }
+
+            double suggestedLateFee = paymentService.calculateLateFee(booking);
+            req.setAttribute("booking", booking);
+            req.setAttribute("suggestedLateFee", suggestedLateFee);
+            req.setAttribute("isOverdue", suggestedLateFee > 0);
+            req.getRequestDispatcher("/WEB-INF/jsp/payments/pay.jsp").forward(req, resp);
+
+        } else if (pathInfo.startsWith("/delete/")) {
+            if (!"admin".equalsIgnoreCase(user.getUserType())) {
+                resp.sendRedirect(req.getContextPath() + "/login"); return;
+            }
+            String id = pathInfo.substring("/delete/".length());
+            paymentService.delete(id);
+            resp.sendRedirect(req.getContextPath() + "/payments");
         }
-        return "payment/add-payment";
     }
 
-    @PostMapping("/payments/add")
-    public String addPayment(
-            @RequestParam String bookingId, @RequestParam String paymentMethod,
-            Model model, HttpSession session) {
-        Booking booking = bookingService.findById(bookingId);
-        if (booking == null) {
-            model.addAttribute("user", session.getAttribute("loggedInUser"));
-            model.addAttribute("error", "Booking not found!");
-            model.addAttribute("bookings", bookingService.getAllBookings());
-            return "payment/add-payment";
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        String pathInfo = req.getPathInfo();
+        HttpSession session = req.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) { resp.sendRedirect(req.getContextPath() + "/login"); return; }
+
+        if ("/pay".equals(pathInfo)) {
+            String bookingId     = req.getParameter("bookingId");
+            String paymentMethod = req.getParameter("paymentMethod");
+            double lateFee       = Double.parseDouble(req.getParameter("lateFee"));
+
+            Booking booking = bookingService.findById(bookingId);
+            if (booking == null) { resp.sendRedirect(req.getContextPath() + "/bookings"); return; }
+
+            Payment payment = new Payment();
+            payment.setBookingId(bookingId);
+            payment.setUserId(user.getUserId());
+            payment.setUserName(user.getName());
+            payment.setAmount(booking.getTotalCost());
+            payment.setLateFee(lateFee);
+            payment.setPaymentMethod(paymentMethod);
+
+            paymentService.createPayment(payment);
+            bookingService.updateStatus(bookingId, "completed");
+            resp.sendRedirect(req.getContextPath() + "/payments");
         }
-        if (paymentService.paymentExistsForBooking(bookingId)) {
-            model.addAttribute("user", session.getAttribute("loggedInUser"));
-            model.addAttribute("error", "A payment already exists for this booking!");
-            model.addAttribute("bookings", bookingService.getAllBookings());
-            return "payment/add-payment";
-        }
-        boolean success = paymentService.addPayment(bookingId, booking.getUserId(),
-                booking.getUserName(), booking.getVehicleName(),
-                booking.getTotalPrice(), paymentMethod);
-        if (success) return "redirect:/payments";
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("error", "Payment failed!");
-        model.addAttribute("bookings", bookingService.getAllBookings());
-        return "payment/add-payment";
-    }
-
-    @GetMapping("/payments/sort/amount")
-    public String sortByAmount(Model model, HttpSession session) {
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("payments", paymentService.getPaymentsSortedByAmount());
-        return "payment/index";
-    }
-
-    @PostMapping("/payments/overdue/{paymentId}")
-    public String markOverdue(@PathVariable String paymentId, HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        paymentService.updateStatus(paymentId, "Overdue");
-        return "redirect:/payments";
-    }
-
-    @PostMapping("/payments/delete/{paymentId}")
-    public String deletePayment(@PathVariable String paymentId, HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        paymentService.deletePayment(paymentId);
-        return "redirect:/payments";
     }
 }

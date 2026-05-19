@@ -1,76 +1,159 @@
 package com.vehiclerental.service;
 
+import com.vehiclerental.algorithm.SelectionSort;
+import com.vehiclerental.linkedlist.LinkedList;
+import com.vehiclerental.model.Booking;
+import com.vehiclerental.model.Payment;
+import com.vehiclerental.util.FileHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PaymentService {
 
-    @Autowired private PaymentRepository paymentRepository;
+    private static final String FILE = "payments.txt";
+    private final FileHandler fileHandler;
 
-    public boolean paymentExistsForBooking(String bookingId) {
-        return getAllPayments().stream().anyMatch(p -> p.getBookingId().equals(bookingId));
+    @Autowired
+    public PaymentService(FileHandler fileHandler) {
+        this.fileHandler = fileHandler;
     }
 
-    public boolean addPayment(String bookingId, String userId, String userName,
-                               String vehicleName, double amount, String paymentMethod) {
-        Payment payment = new Payment("P" + java.util.UUID.randomUUID().toString().replace("-","").substring(0,12), bookingId, userId,
-                userName, vehicleName, amount, LocalDate.now().toString(), paymentMethod, "Paid");
-        return paymentRepository.append(payment);
+    private LinkedList<Payment> loadAll() {
+        LinkedList<Payment> list = new LinkedList<>();
+        for (String line : fileHandler.readLines(FILE)) {
+            Payment p = Payment.fromCsv(line);
+            if (p != null) list.addLast(p);
+        }
+        return list;
     }
 
-    public List<Payment> getAllPayments() { return paymentRepository.readAll(); }
-
-    public Payment findById(String paymentId) {
-        return getAllPayments().stream()
-                .filter(p -> p.getPaymentId().equals(paymentId))
-                .findFirst().orElse(null);
+    private void saveAll(LinkedList<Payment> list) {
+        List<String> lines = new ArrayList<>();
+        for (Payment p : list.toList()) lines.add(p.toCsv());
+        fileHandler.writeLines(FILE, lines);
     }
 
-    public List<Payment> getPaymentsSortedByAmount() {
-        List<Payment> payments = getAllPayments();
-        int n = payments.size();
-        for (int i = 0; i < n - 1; i++) {
-            int minIdx = i;
-            for (int j = i + 1; j < n; j++)
-                if (payments.get(j).getAmount() < payments.get(minIdx).getAmount()) minIdx = j;
-            Payment tmp = payments.get(minIdx);
-            payments.set(minIdx, payments.get(i));
-            payments.set(i, tmp);
+    // ─── CRUD Operations ────────────────────────────────────────────────────
+
+    /** CREATE: Generate a payment record */
+    public boolean createPayment(Payment payment) {
+        payment.setPaymentId(fileHandler.generateId("PAY", FILE));
+        payment.setPaymentDate(LocalDate.now().toString());
+        payment.setStatus("paid");
+        payment.setTotalAmount(payment.getAmount() + payment.getLateFee());
+
+        LinkedList<Payment> list = loadAll();
+        list.addLast(payment);
+        saveAll(list);
+        return true;
+    }
+
+    /** READ: All payments sorted by date */
+    public List<Payment> getAllPayments(String sortBy) {
+        List<Payment> payments = loadAll().toList();
+        if ("amount".equals(sortBy)) {
+            SelectionSort.sortPaymentsByAmount(payments);
+        } else {
+            SelectionSort.sortPaymentsByDate(payments);
         }
         return payments;
     }
 
-    public boolean updatePayment(String paymentId, String paymentMethod, String status) {
-        List<Payment> payments = getAllPayments();
-        boolean found = false;
-        for (Payment p : payments)
-            if (p.getPaymentId().equals(paymentId)) {
-                p.setPaymentMethod(paymentMethod);
-                p.setStatus(status);
-                found = true; break;
-            }
-        if (found) paymentRepository.saveAll(payments);
-        return found;
+    public List<Payment> getAllPayments() {
+        return getAllPayments("date");
     }
 
+    /** READ: Payments by user */
+    public List<Payment> getPaymentsByUser(String userId) {
+        List<Payment> result = new ArrayList<>();
+        for (Payment p : loadAll().toList()) {
+            if (p.getUserId().equals(userId)) result.add(p);
+        }
+        SelectionSort.sortPaymentsByDate(result);
+        return result;
+    }
+
+    /** READ: Find payment by booking ID */
+    public Payment findByBookingId(String bookingId) {
+        for (Payment p : loadAll().toList()) {
+            if (p.getBookingId().equals(bookingId)) return p;
+        }
+        return null;
+    }
+
+    /** UPDATE: Update payment status */
     public boolean updateStatus(String paymentId, String status) {
-        List<Payment> payments = getAllPayments();
-        boolean found = false;
-        for (Payment p : payments)
-            if (p.getPaymentId().equals(paymentId)) { p.setStatus(status); found = true; break; }
-        if (found) paymentRepository.saveAll(payments);
-        return found;
+        LinkedList<Payment> list = loadAll();
+        List<Payment> payments = list.toList();
+        for (int i = 0; i < payments.size(); i++) {
+            if (payments.get(i).getPaymentId().equals(paymentId)) {
+                payments.get(i).setStatus(status);
+                list.set(i, payments.get(i));
+                saveAll(list);
+                return true;
+            }
+        }
+        return false;
     }
 
-    public boolean deletePayment(String paymentId) {
-        List<Payment> payments = getAllPayments();
-        boolean removed = payments.removeIf(p -> p.getPaymentId().equals(paymentId));
-        if (removed) paymentRepository.saveAll(payments);
-        return removed;
+    /** DELETE: Void a payment */
+    public boolean delete(String paymentId) {
+        LinkedList<Payment> list = loadAll();
+        List<Payment> payments = list.toList();
+        for (int i = 0; i < payments.size(); i++) {
+            if (payments.get(i).getPaymentId().equals(paymentId)) {
+                list.deleteByIndex(i);
+                saveAll(list);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Auto-calculate late fee based on how many days past the booking end date.
+     * Charges 20% of the daily rate per overdue day.
+     */
+    public double calculateLateFee(Booking booking) {
+        try {
+            LocalDate endDate = LocalDate.parse(booking.getEndDate());
+            LocalDate today = LocalDate.now();
+            if (today.isAfter(endDate)) {
+                long overdueDays = java.time.temporal.ChronoUnit.DAYS.between(endDate, today);
+                double dailyRate = booking.getTotalDays() > 0
+                        ? booking.getTotalCost() / booking.getTotalDays() : 0;
+                return Math.round(dailyRate * 0.20 * overdueDays * 100.0) / 100.0;
+            }
+        } catch (Exception ignored) {}
+        return 0.0;
+    }
+
+    /** Mark any confirmed bookings whose end date has passed as overdue */
+    public List<Booking> getOverdueBookings(List<Booking> bookings) {
+        LocalDate today = LocalDate.now();
+        List<Booking> overdue = new ArrayList<>();
+        for (Booking b : bookings) {
+            if ("confirmed".equals(b.getStatus())) {
+                try {
+                    if (LocalDate.parse(b.getEndDate()).isBefore(today)) {
+                        overdue.add(b);
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        return overdue;
+    }
+
+    /** Calculate total revenue */
+    public double getTotalRevenue() {
+        return getAllPayments().stream()
+                .filter(p -> "paid".equals(p.getStatus()))
+                .mapToDouble(Payment::getTotalAmount)
+                .sum();
     }
 }
