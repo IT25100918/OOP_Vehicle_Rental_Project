@@ -29,6 +29,3 @@ data/
 
 # Spring Boot
 spring.log
-BookingService.java
-BookingRepository.java
-BookingController.java
