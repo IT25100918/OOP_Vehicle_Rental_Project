@@ -36,7 +36,8 @@ public class BookingService {
         return rentedList.toList();
     }
 
-    public boolean updateBooking(String bookingId, String startDate, String endDate) {
+    public boolean updateBooking(String bookingId, String startDate, String endDate,
+                                 String userName, String vehicleName, String status) {
         List<Booking> bookings = getAllBookings();
         boolean found = false;
         for (Booking b : bookings) {
@@ -51,6 +52,10 @@ public class BookingService {
                         }
                     } catch (Exception ignored) {}
                 }
+
+                if (userName != null && !userName.isEmpty()) b.setUserName(userName);
+                if (vehicleName != null && !vehicleName.isEmpty()) b.setVehicleName(vehicleName);
+                if (status != null && !status.isEmpty()) b.setStatus(status);
                 found = true; break;
             }
         }
