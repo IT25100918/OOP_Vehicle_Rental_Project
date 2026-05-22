@@ -1,46 +1,33 @@
-# 05 — Booking Management
+# Component 2: Authentication & Customer Management
 
-## Overview
-Manages the full booking lifecycle — create, confirm, cancel, complete. Uses a custom LinkedList (DSA) for loading booking records. Fully functional standalone Spring Boot application.
+## What This Component Contains
+Full standalone Spring Boot application focused on **user authentication and customer management**:
 
-## Features
+### Auth Features
+- **Register** — New user registration with BCrypt hashed password
+- **Login** — Supports both Admin and User login via single form
+- **Forgot Password** — Email-based password reset
+- **Logout** — Session invalidation
 
-| Route | Method | Description |
-|---|---|---|
-| `/bookings` | GET | List bookings (admin: all; user: own) |
-| `/bookings/add` | GET/POST | Create booking → redirects to payment |
-| `/bookings/edit/{id}` | GET | Edit booking form (admin only) |
-| `/bookings/update` | POST | Update dates/status (admin only) |
-| `/bookings/confirm/{id}` | POST | Active → Confirmed |
-| `/bookings/cancel/{id}` | POST | Cancel booking, release vehicle |
-| `/bookings/complete/{id}` | POST | Mark Completed, release vehicle |
-| `/bookings/delete/{id}` | POST | Hard delete (admin only) |
+### Customer Features
+- **List Users** — Admin-only view of all registered customers
+- **Edit User** — Update profile (name, email, phone, licence number)
+- **Change Password** — Secure password change with current-password verification
+- **Delete User** — Admin or self-delete
 
-## Booking Status Flow
-```
-Active → Confirmed → Completed
-       ↓
-    Cancelled
-```
-
-## Key Files
-- `booking/Booking.java` — Entity with id, userId, vehicleId, userName, vehicleName, startDate, endDate, status, totalPrice
-- `booking/BookingController.java` — MVC routes + PaymentService for paidBookingIds
-- `booking/BookingService.java` — Uses custom `LinkedList<Booking>` to load records (DSA requirement)
-- `booking/BookingRepository.java` — File persistence → `data/bookings.txt`
-- `shared/LinkedList.java` — Custom DSA linked list
+### Key Files
+- `customer/User.java` — User entity
+- `customer/UserController.java` — Auth + CRUD routes + all REST API endpoints + Dashboard
+- `customer/UserService.java` — Business logic
+- `customer/UserRepository.java` — File persistence
+- `templates/auth/` — login, register, forgot-password pages
+- `templates/customer/` — index, edit-users pages
 
 ## How to Run
 ```bash
+cd backend
 mvn spring-boot:run
 ```
-Visit: http://localhost:8080/bookings
+Visit: http://localhost:8080/login
 
-## GitHub Setup
-```bash
-git init
-git add .
-git commit -m "feat: booking lifecycle management module"
-git remote add origin https://github.com/YOUR_USERNAME/05-booking-management.git
-git push -u origin main
-```
+**Default Admin:** Check `data/admins.txt` for credentials.
