@@ -13,8 +13,6 @@ public class FieldCodec {
 
     public static String decode(String value) {
         if (value == null) return "";
-        // IMPORTANT: unescape \\ before \c, otherwise "\\c" (literal backslash + c) would
-        // be misread as a comma. The encode order is: \ → \\ then , → \c, so decode reverses it.
-        return value.replace("\\\\", "\\").replace("\\c", ",");
+        return value.replace("\\c", ",").replace("\\\\", "\\");
     }
 }
