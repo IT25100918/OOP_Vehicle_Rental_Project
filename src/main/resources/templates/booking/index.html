@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+  <title>Bookings | Ceylon Rides</title>
+  <style>
+    :root {
+      --primary: #c8963e; --primary-dark: #a87830; --primary-light: #f0c060;
+      --danger: #c0392b; --warning: #e67e22;
+      --bg: #080604; --card: #13100a; --card2: #1c1710;
+      --border: #2a2015; --border2: #3d3020;
+      --text: #f0e6d3; --muted: #7a6a52; --radius: .8rem;
+      --gold: #c8963e; --gold-light: #f0c060; --spice: #8b3a1a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    p { color: var(--muted); margin-bottom: 1rem; }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: linear-gradient(var(--gold), var(--spice)); border-radius: 3px; }
+
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(8,6,4,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border2); }
+    .header-inner { display: flex; justify-content: space-between; align-items: center; height: 68px; padding: 0 2rem; max-width: 1280px; margin: 0 auto; position: relative; }
+    .header-inner::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, rgba(200,150,62,0.4), transparent); }
+    .brand { display: flex; flex-direction: column; line-height: 1; }
+    .brand-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; background: linear-gradient(135deg, #c8963e 0%, #f0c060 50%, #c8963e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .brand-sub { font-family: 'Cormorant Garamond', serif; font-size: 0.52rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(200,150,62,0.5); }
+    .header-nav { display: flex; gap: 2rem; }
+    .header-nav a { font-size: 0.82rem; color: var(--muted); transition: color 0.2s; }
+    .header-nav a:hover { color: var(--gold-light); }
+    .user-pill { display: flex; align-items: center; gap: 0.6rem; background: var(--card2); border: 1px solid var(--border2); border-radius: 2rem; padding: 4px 14px 4px 5px; }
+    .user-av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--spice)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.72rem; color: #fff; }
+    .user-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .user-role { font-size: 0.58rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; display: block; }
+    .btn-logout { font-size: 0.72rem; color: var(--danger); background: none; border: 1px solid rgba(192,57,43,0.4); border-radius: 2rem; padding: 4px 12px; cursor: pointer; }
+
+    .main { padding-top: 90px; min-height: 100vh; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+    .page-header { padding: 2rem 0 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); position: relative; margin-bottom: 2rem; }
+    .page-header::after { content: '❖'; position: absolute; bottom: -0.65rem; left: 50%; transform: translateX(-50%); color: var(--gold); font-size: 0.65rem; background: var(--bg); padding: 0 0.6rem; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #c8963e, #f0c060); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; font-family: 'Cormorant Garamond', serif; }
+
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; }
+    .panel-hdr { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: linear-gradient(to right, rgba(200,150,62,0.06), transparent); }
+    .panel-hdr h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 700; color: #e8d5b0; margin: 0; }
+    .panel-hdr h3::before { content: '✦ '; color: var(--gold); font-size: 0.7rem; }
+    .panel-link { color: var(--gold); font-size: 0.78rem; }
+
+    .filters { display: flex; gap: 0.75rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .search-box { display: flex; align-items: center; gap: 0.5rem; background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.5rem 0.85rem; flex: 1; min-width: 180px; }
+    .search-box input { background: none; border: none; outline: none; color: var(--text); font-size: 0.82rem; width: 100%; }
+    .search-box input::placeholder { color: var(--muted); }
+    select.filter-select { background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.5rem 0.85rem; color: var(--text); font-size: 0.82rem; outline: none; cursor: pointer; }
+
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 0.6rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; text-decoration: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--spice)); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-danger { background: transparent; color: var(--danger); border-color: rgba(192,57,43,0.4); }
+    .btn-danger:hover { background: rgba(192,57,43,0.1); }
+    .btn-outline { background: transparent; color: var(--gold); border-color: rgba(200,150,62,0.4); }
+    .btn-outline:hover { background: rgba(200,150,62,0.08); }
+    .btn-sm { padding: 0.28rem 0.7rem; font-size: 0.73rem; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th { padding: 0.75rem 1.25rem; text-align: left; color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(200,150,62,0.03); border-bottom: 1px solid var(--border); font-weight: 500; }
+    td { padding: 0.9rem 1.25rem; color: var(--text); border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(200,150,62,0.04); }
+    td.muted { color: var(--muted); font-size: 0.75rem; }
+    td.primary { color: var(--gold-light); font-weight: 600; }
+    .empty-td { text-align: center; color: var(--muted); padding: 3rem !important; font-family: 'Cormorant Garamond', serif; }
+
+    .pill { display: inline-block; padding: 3px 12px; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; }
+    .pill-Active { background: rgba(200,150,62,0.12); color: #f0c060; border: 1px solid rgba(200,150,62,0.25); }
+    .pill-Confirmed, .pill-Paid { background: rgba(45,90,61,0.2); color: #6ec98a; border: 1px solid rgba(45,90,61,0.3); }
+    .pill-Completed { background: rgba(26,107,122,0.15); color: #5bc4d8; border: 1px solid rgba(26,107,122,0.3); }
+    .pill-Cancelled { background: rgba(192,57,43,0.12); color: #e07060; border: 1px solid rgba(192,57,43,0.25); }
+
+    footer { background: var(--card); border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 3rem; text-align: center; }
+    footer::before { content: ''; display: block; height: 1px; background: linear-gradient(to right, transparent, var(--gold), var(--spice), var(--gold), transparent); margin-bottom: 1.25rem; }
+    .copyright { color: var(--muted); font-family: 'Cormorant Garamond', serif; font-size: 0.82rem; letter-spacing: 0.06em; }
+  </style>
+</head>
+<body>
+<header class="header"><div class="header-inner">
+  <a href="/dashboard" class="brand"><span class="brand-name">Ceylon Rides</span><span class="brand-sub">Journey of Ceylon</span></a>
+  <nav class="header-nav">
+    <a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
+    <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
+    <a href="/admins" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="user-pill">
+      <div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
+      <div><span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">G</span><span class="user-role" th:text="${user != null} ? ${user.role} : ''">R</span></div>
+    </div>
+    <a href="/logout" class="btn-logout">Logout</a>
+  </div>
+</div></header>
+
+<main class="main"><div class="container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'All Bookings' : 'My Bookings'">Bookings</h1>
+      <p class="page-sub" th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'Manage all vehicle bookings' : 'Your vehicle reservation history'">Bookings</p>
+    </div>
+    <a href="/bookings/add" class="btn btn-primary">+ New Booking</a>
+  </div>
+
+  <div class="panel">
+    <div class="panel-hdr">
+      <h3 th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'All Bookings' : 'My Bookings'">Bookings</h3>
+      <a href="/bookings/sort/date" class="panel-link">Sort by date →</a>
+    </div>
+    <div class="filters" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
+      <div class="search-box"><span style="color:#888;">&#128269;</span><input type="text" id="srch" placeholder="Search customer or vehicle..." oninput="filterTable()"></div>
+      <select class="filter-select" id="sf" onchange="filterTable()"><option value="">All Status</option><option>Active</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option></select>
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="bTable">
+        <thead><tr>
+          <th>ID</th>
+          <th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Customer</th>
+          <th>Vehicle</th><th>Start</th><th>End</th><th>Total</th><th>Status</th>
+          <th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Actions</th>
+          <th th:if="${user != null and user.role == 'USER'}">Actions</th>
+        </tr></thead>
+        <tbody>
+        <tr th:each="b : ${bookings}">
+          <td class="muted" th:text="${b.bookingId}">-</td>
+          <td th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}" th:text="${b.userName}">-</td>
+          <td th:text="${b.vehicleName}">-</td>
+          <td class="muted" th:text="${b.startDate}">-</td>
+          <td class="muted" th:text="${b.endDate}">-</td>
+          <td class="primary" th:text="'Rs. ' + ${b.totalPrice}">-</td>
+          <td><span class="pill" th:classappend="'pill-' + ${b.status}" th:text="${b.status}">-</span></td>
+          <td th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
+            <form th:action="@{/bookings/confirm/{id}(id=${b.bookingId})}" method="post" style="display:inline" th:if="${b.status == 'Active'}"><button type="submit" class="btn btn-outline btn-sm">Confirm</button></form>
+            <a th:href="@{/bookings/edit/{id}(id=${b.bookingId})}" class="btn btn-outline btn-sm">Edit</a>
+            <form th:action="@{/bookings/cancel/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Cancel booking?')"><button type="submit" class="btn btn-danger btn-sm">Cancel</button></form>
+            <form th:action="@{/bookings/delete/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Delete booking?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form>
+          </td>
+          <td th:if="${user != null and user.role == 'USER'}">
+            <a th:if="${(paidBookingIds == null or !paidBookingIds.contains(b.bookingId)) and (b.status == 'Active' or b.status == 'Confirmed')}" th:href="@{/payments/add(bookingId=${b.bookingId})}" class="btn btn-primary btn-sm">Pay Now</a>
+            <span th:if="${paidBookingIds != null and paidBookingIds.contains(b.bookingId)}" class="pill pill-Confirmed">Paid</span>
+            <form th:if="${b.status == 'Active' or b.status == 'Confirmed'}" th:action="@{/bookings/cancel/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Cancel this booking?')">
+              <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${bookings == null or #lists.isEmpty(bookings)}"><td colspan="8" class="empty-td">No bookings yet. <a href="/bookings/add" style="color:#c8963e;">Create one →</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    function filterTable(){
+      const s=document.getElementById('srch').value.toLowerCase();
+      const f=document.getElementById('sf').value;
+      document.querySelectorAll('#bTable tbody tr').forEach(r=>{
+        if(!r.cells[1]) return;
+        const name=(r.cells[1].textContent+r.cells[2].textContent).toLowerCase();
+        const st=(r.cells[6].textContent||'').trim();
+        r.style.display=((!s||name.includes(s))&&(!f||st===f))?'':'none';
+      });
+    }
+  </script>
+</div></main>
+
+<footer>
+  <div class="copyright">&copy; 2026 Ceylon Rides &middot; Rooted in Ceylon, Driven by Passion &middot; All Rights Reserved.</div>
+</footer>
+</body></html>

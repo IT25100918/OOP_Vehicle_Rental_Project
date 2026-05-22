@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fleet | Ceylon Rides</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+    :root {
+      --primary:        #c8963e;
+      --primary-dark:   #a87830;
+      --primary-light:  #f0c060;
+      --primary-glow:   rgba(200,150,62,0.2);
+      --danger:         #c0392b;
+      --warning:        #e67e22;
+      --bg:             #080604;
+      --bg2:            #0f0b07;
+      --card:           #13100a;
+      --card2:          #1c1710;
+      --border:         #2a2015;
+      --border2:        #3d3020;
+      --text:           #f0e6d3;
+      --text2:          #c9b89a;
+      --muted:          #7a6a52;
+      --radius:         .8rem;
+      --gold:           #c8963e;
+      --gold-light:     #f0c060;
+      --spice:          #8b3a1a;
+      --lotus:          #c0607a;
+      --ocean:          #1a6b7a;
+      --jungle:         #2d5a3d;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+              radial-gradient(ellipse at 0% 0%, rgba(200,150,62,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 100% 100%, rgba(139,58,26,0.04) 0%, transparent 50%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    p { color: var(--text2); margin-bottom: 1rem; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(var(--gold), var(--spice)); border-radius: 3px; }
+
+    /* ── HEADER ── */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(8,6,4,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border2);
+      box-shadow: 0 1px 0 rgba(200,150,62,0.1);
+    }
+    .header-inner {
+      display: flex; justify-content: space-between; align-items: center;
+      height: 68px; padding: 0 2rem; max-width: 1280px; margin: 0 auto;
+    }
+    .header-inner::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(200,150,62,0.35), transparent);
+    }
+    .header-inner { position: relative; }
+
+    /* Brand */
+    .brand, a.brand {
+      display: flex; flex-direction: column; line-height: 1;
+      text-decoration: none;
+    }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 900;
+      background: linear-gradient(135deg, #c8963e 0%, #f0c060 40%, #e8b84b 70%, #c8963e 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      letter-spacing: 0.03em;
+      filter: drop-shadow(0 0 12px rgba(200,150,62,0.3));
+    }
+    .brand-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.55rem; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(200,150,62,0.5);
+      margin-top: 1px;
+    }
+
+    /* Nav */
+    .header-nav { display: flex; gap: 2rem; align-items: center; }
+    .header-nav a {
+      font-size: 0.82rem; color: var(--muted);
+      transition: color 0.2s; position: relative; padding-bottom: 2px;
+    }
+    .header-nav a::after {
+      content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 1px; background: var(--gold); transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+    .header-nav a:hover, .header-nav a.active { color: var(--gold-light); }
+    .header-nav a:hover::after, .header-nav a.active::after { transform: scaleX(1); }
+
+    /* User pill */
+    .user-pill {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 2rem; padding: 4px 14px 4px 5px;
+    }
+    .user-av {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--spice));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.72rem; color: #fff;
+    }
+    .user-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .user-role { font-size: 0.58rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; display: block; }
+    .btn-logout {
+      font-size: 0.72rem; color: var(--danger);
+      background: none; border: 1px solid rgba(192,57,43,0.4);
+      border-radius: 2rem; padding: 4px 12px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: rgba(192,57,43,0.1); }
+
+    /* ── MAIN ── */
+    .main { padding-top: 90px; min-height: 100vh; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+    /* Page header */
+    .page-header {
+      padding: 2rem 0 1.5rem;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      position: relative; margin-bottom: 2rem;
+    }
+    .page-header::after {
+      content: '❖';
+      position: absolute; bottom: -0.65rem; left: 50%;
+      transform: translateX(-50%);
+      color: var(--gold); font-size: 0.65rem;
+      background: var(--bg); padding: 0 0.6rem;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; line-height: 1;
+      background: linear-gradient(135deg, #c8963e, #f0c060);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .page-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; font-family: 'Cormorant Garamond', serif; letter-spacing: 0.05em; }
+
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      position: relative; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(to right, var(--gold), var(--spice));
+    }
+    .stat-card:hover { border-color: var(--border2); }
+    .stat-card h4 { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.5rem; font-weight: 400; text-transform: uppercase; letter-spacing: 0.07em; }
+    .stat-val { font-size: 2rem; font-weight: 700; color: var(--gold-light); line-height: 1; }
+
+    /* Panel */
+    .panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .panel-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+      background: linear-gradient(to right, rgba(200,150,62,0.06), rgba(139,58,26,0.03), transparent);
+      position: relative;
+    }
+    .panel-hdr::after {
+      content: ''; position: absolute; bottom: 0; left: 1.5rem; right: 1.5rem; height: 1px;
+      background: linear-gradient(to right, rgba(200,150,62,0.3), transparent);
+    }
+    .panel-hdr h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 700; color: #e8d5b0; margin: 0;
+    }
+    .panel-hdr h3::before { content: '✦ '; color: var(--gold); font-size: 0.7rem; }
+    .panel-link { color: var(--gold); font-size: 0.78rem; transition: color 0.2s; }
+    .panel-link:hover { color: var(--gold-light); }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th {
+      padding: 0.75rem 1.25rem; text-align: left;
+      color: var(--muted); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      background: rgba(200,150,62,0.03);
+      border-bottom: 1px solid var(--border); font-weight: 500;
+    }
+    td { padding: 0.9rem 1.25rem; color: var(--text); border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(200,150,62,0.04); }
+    td.muted { color: var(--muted); font-size: 0.75rem; }
+    td.primary { color: var(--gold-light); font-weight: 600; }
+
+    /* Pills */
+    .pill { display: inline-block; padding: 3px 12px; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; }
+    .pill-active, .pill-Available    { background: rgba(200,150,62,0.12); color: #f0c060; border: 1px solid rgba(200,150,62,0.25); }
+    .pill-Confirmed, .pill-Paid, .pill-Approved { background: rgba(45,90,61,0.2); color: #6ec98a; border: 1px solid rgba(45,90,61,0.3); }
+    .pill-Completed  { background: rgba(26,107,122,0.15); color: #5bc4d8; border: 1px solid rgba(26,107,122,0.3); }
+    .pill-Cancelled, .pill-Inactive, .pill-Overdue { background: rgba(192,57,43,0.12); color: #e07060; border: 1px solid rgba(192,57,43,0.25); }
+    .pill-Pending, .pill-Maintenance, .pill-Rented  { background: rgba(230,126,34,0.12); color: #e8a040; border: 1px solid rgba(230,126,34,0.25); }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 0.6rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; text-decoration: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--spice)); color: #fff; border-color: transparent; }
+    .btn-primary:hover { background: linear-gradient(135deg, var(--gold-light), var(--gold)); transform: translateY(-1px); }
+    .btn-danger { background: transparent; color: var(--danger); border-color: rgba(192,57,43,0.4); }
+    .btn-danger:hover { background: rgba(192,57,43,0.1); }
+    .btn-outline { background: transparent; color: var(--gold); border-color: rgba(200,150,62,0.4); }
+    .btn-outline:hover { background: rgba(200,150,62,0.08); color: var(--gold-light); }
+    .btn-sm { padding: 0.28rem 0.7rem; font-size: 0.73rem; }
+
+    /* Filters */
+    .filters { display: flex; gap: 0.75rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .search-box { display: flex; align-items: center; gap: 0.5rem; background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.5rem 0.85rem; flex: 1; min-width: 180px; transition: border-color 0.2s; }
+    .search-box:focus-within { border-color: rgba(200,150,62,0.4); }
+    .search-box input { background: none; border: none; outline: none; color: var(--text); font-size: 0.82rem; width: 100%; }
+    .search-box input::placeholder { color: var(--muted); }
+    select.filter-select { background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.5rem 0.85rem; color: var(--text); font-size: 0.82rem; outline: none; cursor: pointer; }
+
+    /* Forms */
+    .form-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; max-width: 800px; margin: 0 auto; position: relative; }
+    .form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, var(--gold), var(--spice), var(--lotus)); border-radius: var(--radius) var(--radius) 0 0; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.45rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+    .form-label span { color: var(--danger); }
+    .form-input { width: 100%; background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.7rem 1rem; color: var(--text); font-family: inherit; font-size: 0.88rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,150,62,0.1); }
+    .form-input::placeholder { color: var(--muted); }
+    select.form-input { cursor: pointer; }
+    textarea.form-input { resize: vertical; min-height: 100px; }
+    .form-input[readonly] { opacity: 0.5; cursor: not-allowed; }
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1.75rem; }
+
+    /* Auth */
+    .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .auth-card { background: var(--card); border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 420px; border: 1px solid var(--border2); position: relative; overflow: hidden; }
+    .auth-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, var(--gold), var(--spice), var(--lotus)); }
+    .auth-logo { text-align: center; margin-bottom: 1.5rem; }
+    .auth-logo .logo-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, #c8963e, #f0c060); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .auth-logo .logo-sub { font-family: 'Cormorant Garamond', serif; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 0.2rem; }
+    .auth-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; text-align: center; margin-bottom: 0.4rem; color: var(--text); }
+    .auth-sub { font-size: 0.82rem; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
+    .alert { padding: 0.75rem 1rem; border-radius: 0.6rem; font-size: 0.82rem; margin-bottom: 1rem; }
+    .alert-error { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: #e07060; }
+    .alert-success { background: rgba(200,150,62,0.1); border: 1px solid rgba(200,150,62,0.3); color: var(--gold-light); }
+    .auth-footer { text-align: center; font-size: 0.78rem; color: var(--muted); margin-top: 1.25rem; }
+    .auth-footer a { color: var(--gold); }
+
+    /* Footer */
+    footer { background: var(--card); border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 3rem; text-align: center; }
+    footer::before { content: ''; display: block; height: 1px; background: linear-gradient(to right, transparent, var(--gold), var(--spice), var(--gold), transparent); margin-bottom: 1.25rem; }
+    footer .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    footer .footer-links a { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); transition: color 0.2s; }
+    footer .footer-links a:hover { color: var(--gold); }
+    .copyright { color: var(--muted); font-family: 'Cormorant Garamond', serif; font-size: 0.82rem; letter-spacing: 0.06em; }
+
+    /* Ornament between sections */
+    .section-ornament { text-align: center; color: var(--gold); font-size: 0.7rem; margin: 1.5rem 0; letter-spacing: 0.3em; opacity: 0.6; }
+
+
+    /* ── FLEET GRID ── */
+    .fleet-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
+    @media(max-width:900px) { .fleet-grid { grid-template-columns: 1fr; } }
+
+    .fleet-card {
+      background: #13100a; border: 1px solid #2a2015;
+      border-radius: 1rem; overflow: hidden; position: relative; cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+    }
+    .fleet-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.6); border-color: rgba(200,150,62,0.4); }
+
+    .fleet-card-img { width:100%; height:300px; background:#0f0b07; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; border-bottom:1px solid #2a2015; }
+    .fleet-card-img img { width:100%; height:100%; object-fit:contain; padding:0.75rem; transition:transform 0.4s ease; }
+    .fleet-card:hover .fleet-card-img img { transform: scale(1.04); }
+    .fleet-card-img .emoji { font-size:5rem; }
+
+    .avail-badge { position:absolute; top:12px; right:12px; backdrop-filter:blur(6px); color:#fff; font-size:0.7rem; font-weight:600; padding:4px 12px; border-radius:20px; display:flex; align-items:center; gap:4px; }
+    .avail-badge.available { background: rgba(45,90,61,0.85); }
+    .avail-badge.unavailable { background: rgba(139,58,26,0.85); }
+
+    .admin-actions-badge { position:absolute; top:12px; left:12px; display:flex; gap:6px; }
+
+    .fleet-card-body { padding: 1.25rem 1.5rem 1.5rem; }
+    .fleet-card-name { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+    .fleet-card-name h3 { font-family: 'Playfair Display', serif; font-size:1.4rem; font-weight:700; color:#f0e6d3; }
+    .fleet-card-name .arrow { color: #c8963e; font-size:1rem; transition:transform 0.3s; }
+    .fleet-card:hover .arrow { transform: translateX(5px); }
+    .fleet-card-meta { font-size:0.8rem; color:#7a6a52; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem; }
+    .fleet-card-footer { display:flex; justify-content:space-between; align-items:center; }
+    .fleet-price .amount { font-size:1.9rem; font-weight:700; color:#f0c060; letter-spacing:-0.02em; }
+    .fleet-price .unit { font-size:0.78rem; color:#7a6a52; margin-left:4px; }
+
+    /* Filters */
+    .filter-bar { display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .filter-btn { background:transparent; border:1px solid #2a2015; color:#7a6a52; border-radius:2rem; padding:0.35rem 1rem; font-size:0.8rem; cursor:pointer; transition:all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { background:#c8963e; color:#0a0804; border-color:#c8963e; font-weight:600; }
+    .search-input { background:#13100a; border:1px solid #2a2015; color:#f0e6d3; border-radius:0.6rem; padding:0.5rem 1rem; font-size:0.82rem; outline:none; flex:1; min-width:200px; }
+    .search-input:focus { border-color:#c8963e; }
+    .empty-td { text-align:center; color:#7a6a52; padding:2rem; font-family:'Cormorant Garamond',serif; font-size:1rem; }
+    .empty-fleet { text-align:center; color:#7a6a52; padding:3rem; font-family:'Cormorant Garamond',serif; font-size:1.1rem; }
+
+
+    /* ── STATS ── */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
+
+    /* ── FILTERS ── */
+    .filters-bar { display:flex; gap:0.75rem; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; }
+    .search-box { display:flex; align-items:center; gap:0.5rem; background:var(--card2); border:1px solid var(--border2); border-radius:0.6rem; padding:0.55rem 0.75rem; flex:1; min-width:200px; transition:border-color 0.2s; }
+    .search-box:focus-within { border-color:var(--gold); }
+    .search-box input { background:none; border:none; outline:none; color:var(--text); font-size:0.82rem; width:100%; }
+    .search-box input::placeholder { color:var(--muted); }
+    select.filter-select { background:var(--card2); border:1px solid var(--border2); border-radius:0.6rem; padding:0.55rem 0.75rem; color:var(--text); font-size:0.82rem; outline:none; cursor:pointer; }
+
+    /* ── FLEET GRID ── */
+    .fleet-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .fleet-grid { grid-template-columns:1fr; } }
+
+    .fleet-card {
+      background:#13100a; border:1px solid #2a2015;
+      border-radius:1rem; overflow:hidden; position:relative; cursor:pointer;
+      transition:transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+    }
+    .fleet-card:hover { transform:translateY(-6px); box-shadow:0 20px 40px rgba(0,0,0,0.6); border-color:rgba(200,150,62,0.4); }
+
+    .fleet-card-img { width:100%; height:300px; background:#0f0b07; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; border-bottom:1px solid #2a2015; }
+    .fleet-card-img img { width:100%; height:100%; object-fit:contain; padding:0.75rem; transition:transform 0.4s ease; }
+    .fleet-card:hover .fleet-card-img img { transform:scale(1.04); }
+    .fleet-card-img .emoji { font-size:5rem; }
+
+    .avail-badge { position:absolute; top:12px; right:12px; backdrop-filter:blur(6px); color:#fff; font-size:0.7rem; font-weight:600; padding:4px 12px; border-radius:20px; display:flex; align-items:center; gap:4px; }
+    .avail-badge.available { background:rgba(45,90,61,0.9); }
+    .avail-badge.unavailable { background:rgba(139,58,26,0.9); }
+    .admin-actions-badge { position:absolute; top:12px; left:12px; display:flex; gap:6px; }
+
+    .fleet-card-body { padding:1.25rem 1.5rem 1.5rem; }
+    .fleet-card-name { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+    .fleet-card-name h3 { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:#f0e6d3; }
+    .fleet-card-name .arrow { color:#c8963e; font-size:1rem; transition:transform 0.3s; }
+    .fleet-card:hover .arrow { transform:translateX(5px); }
+    .fleet-card-meta { font-size:0.8rem; color:#7a6a52; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem; }
+    .fleet-card-footer { display:flex; justify-content:space-between; align-items:center; }
+    .fleet-price .amount { font-size:1.9rem; font-weight:700; color:#f0c060; letter-spacing:-0.02em; }
+    .fleet-price .unit { font-size:0.78rem; color:#7a6a52; margin-left:4px; }
+
+    .btn-book { background:linear-gradient(135deg,#c8963e,#8b3a1a); color:#fff; border:none; border-radius:0.7rem; padding:0.65rem 1.5rem; font-size:0.88rem; font-weight:600; cursor:pointer; transition:opacity 0.2s; text-decoration:none; display:inline-block; }
+    .btn-book:hover { opacity:0.85; }
+    .btn-unavail { color:#7a6a52; font-size:0.82rem; font-weight:500; border:1px solid #2a2015; border-radius:0.7rem; padding:0.65rem 1.2rem; display:inline-block; }
+
+    .empty-state { grid-column:1/-1; text-align:center; padding:4rem; color:#7a6a52; }
+    .empty-state .icon { font-size:4rem; display:block; margin-bottom:1rem; opacity:0.3; }
+
+    @media(max-width:768px) { .stats-row { grid-template-columns:1fr; } }
+
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a href="/dashboard" class="brand"><span class="brand-name">Ceylon Rides</span><span class="brand-sub">Journey of Ceylon</span></a>
+    <nav class="header-nav">
+      <a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
+      <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
+      <a href="/admins" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div class="user-pill">
+        <div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
+        <div><span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">Guest</span><span class="user-role" th:text="${user != null} ? ${user.role} : ''">Role</span></div>
+      </div>
+      <a href="/logout" class="btn-logout">Logout</a>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Vehicle Fleet</h1>
+        <p class="page-sub">Browse our premium collection of vehicles</p>
+      </div>
+      <div style="display:flex;gap:0.75rem;align-items:center;">
+        <a href="/vehicles/sort/price" class="btn btn-outline btn-sm">Sort by Price</a>
+        <a href="/vehicles/sort/availability" class="btn btn-outline btn-sm">Sort by Status</a>
+        <a href="/vehicles/add" class="btn btn-primary"
+           th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">+ Add Vehicle</a>
+      </div>
+    </div>
+
+    <!-- Stats — admin only -->
+    <div class="stats-row" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
+      <div class="stat-card"><h4>Total Vehicles</h4><div class="stat-val" th:text="${vehicles != null} ? ${vehicles.size()} : 0">0</div></div>
+      <div class="stat-card"><h4>Available</h4><div class="stat-val" style="color:#c8963e;" th:text="${vehicles != null} ? ${vehicles.size()} : 0">0</div></div>
+      <div class="stat-card"><h4>Rented / Maintenance</h4><div class="stat-val" style="color:#e67e22;" th:text="0">0</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <div class="search-box">
+        <span style="color:var(--muted);">&#128269;</span>
+        <input type="text" id="srch" placeholder="Search by name or type..." oninput="filterCards()">
+      </div>
+      <select class="filter-select" id="statusF" onchange="filterCards()">
+        <option value="">All Status</option>
+        <option value="Available">Available</option>
+        <option value="Rented">Rented</option>
+        <option value="Maintenance">Maintenance</option>
+      </select>
+    </div>
+
+    <!-- Fleet Cards — same for both admin and user -->
+    <div class="fleet-grid" id="fleetGrid">
+      <div class="fleet-card"
+           th:each="v : ${vehicles}"
+           th:attr="data-name=${v.brand + ' ' + v.model},data-type=${v.type},data-status=${v.availability}">
+
+        <!-- Image -->
+        <div class="fleet-card-img">
+          <img th:if="${v.imagePath != null and v.imagePath != 'none' and v.imagePath != ''}"
+               th:src="${v.imagePath}" th:alt="${v.brand + ' ' + v.model}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="emoji"
+               th:style="${v.imagePath != null and v.imagePath != 'none' and v.imagePath != ''} ? 'display:none;' : 'display:flex;'">🚗</div>
+
+          <!-- Availability badge -->
+          <div th:if="${v.availability == 'Available'}" class="avail-badge available">&#10003; Available</div>
+          <div th:unless="${v.availability == 'Available'}" class="avail-badge unavailable" th:text="${v.availability}">Status</div>
+
+          <!-- Admin edit/delete on image -->
+          <div class="admin-actions-badge" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
+            <a th:href="@{/vehicles/edit/{id}(id=${v.vehicleId})}" class="btn btn-outline btn-sm" style="backdrop-filter:blur(6px);background:rgba(0,0,0,0.5);">Edit</a>
+            <form th:action="@{/vehicles/delete/{id}(id=${v.vehicleId})}" method="post" style="display:inline" onsubmit="return confirm('Delete this vehicle?')"><button type="submit" class="btn btn-danger btn-sm" >Delete</button></form>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="fleet-card-body">
+          <div class="fleet-card-name">
+            <h3 th:text="${v.brand + ' ' + v.model}">Vehicle Name</h3>
+            <span class="arrow">&rarr;</span>
+          </div>
+          <div class="fleet-card-meta">
+            <span th:text="${v.type}">Type</span>
+            &nbsp;|&nbsp;
+            <span th:text="${v.plateNumber}">Plate</span>
+          </div>
+          <div class="fleet-card-footer">
+            <div class="fleet-price">
+              <span class="amount" th:text="'Rs. ' + ${v.rentPrice}">Rs. 0</span>
+              <span class="unit">/ day</span>
+            </div>
+            <a href="/bookings/add" class="btn-book" th:if="${v.availability == 'Available'}">Book Now</a>
+            <span class="btn-unavail" th:unless="${v.availability == 'Available'}" th:text="${v.availability}">Unavailable</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" th:if="${vehicles == null or #lists.isEmpty(vehicles)}">
+        <span class="icon">🚗</span>
+        No vehicles in the fleet yet.
+        <a href="/vehicles/add" style="color:#c8963e;"
+           th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}"> Add one &rarr;</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="/dashboard">Dashboard</a><a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a>
+    <a href="/payments">Payments</a><a href="/reviews">Reviews</a><a href="/logout">Logout</a>
+  </div>
+  <div class="copyright">&copy; 2026 Ceylon Rides · Rooted in Ceylon, Driven by Passion · ALL RIGHTS RESERVED.</div>
+</footer>
+
+<script>
+  function filterCards() {
+    const s = document.getElementById('srch').value.toLowerCase();
+    const f = document.getElementById('statusF').value;
+    document.querySelectorAll('#fleetGrid .fleet-card').forEach(card => {
+      const name   = (card.dataset.name || '').toLowerCase();
+      const type   = (card.dataset.type || '').toLowerCase();
+      const status = (card.dataset.status || '');
+      const matchS = !s || name.includes(s) || type.includes(s);
+      const matchF = !f || status === f;
+      card.style.display = matchS && matchF ? '' : 'none';
+    });
+  }
+</script>
+</body></html>
