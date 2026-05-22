@@ -1,6 +1,7 @@
 package com.vehiclerental.review;
 
 import com.vehiclerental.customer.User;
+import com.vehiclerental.customer.UserService;
 import com.vehiclerental.vehicle.Vehicle;
 import com.vehiclerental.vehicle.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpSession;
 public class ReviewController {
 
     @Autowired private ReviewService reviewService;
+    @Autowired private UserService userService;
     @Autowired private VehicleService vehicleService;
 
     @GetMapping("/reviews")
@@ -30,11 +32,13 @@ public class ReviewController {
         return "review/index";
     }
 
+    // FIX: added session guard so loggedIn is never null when the form renders
     @GetMapping("/reviews/add")
     public String showAddForm(Model model, HttpSession session) {
         User loggedIn = (User) session.getAttribute("loggedInUser");
         if (loggedIn == null) return "redirect:/login";
         model.addAttribute("user", loggedIn);
+        model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("vehicles", vehicleService.getAllVehicles());
         return "review/add-review";
     }
