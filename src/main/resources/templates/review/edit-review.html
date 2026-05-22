@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Edit Vehicle | Ceylon Rides</title>
+  <title>Edit Review | Ceylon Rides</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&display=swap');
 
@@ -277,65 +277,40 @@
 <body>
 <header class="header"><div class="header-inner">
   <a href="/dashboard" class="brand"><span class="brand-name">Ceylon Rides</span><span class="brand-sub">Journey of Ceylon</span></a>
-  <nav class="header-nav">
-    <a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
+  <nav class="header-nav"><a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
     <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
     <a href="/admins" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
   </nav>
   <div style="display:flex;align-items:center;gap:0.75rem;">
     <div class="user-pill"><div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
-      <div><span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">Guest</span><span class="user-role" th:text="${user != null} ? ${user.role} : ''">Role</span></div></div>
+      <div><span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">G</span><span class="user-role" th:text="${user != null} ? ${user.role} : ''">R</span></div></div>
     <a href="/logout" class="btn-logout">Logout</a>
   </div>
 </div></header>
 <main class="main"><div class="container">
-  <div class="page-header"><div><h1 class="page-title">Edit Vehicle</h1><p class="page-sub" th:text="${vehicle != null} ? ${vehicle.brand + ' ' + vehicle.model} : ''">Vehicle</p></div><a href="/vehicles" class="btn btn-outline">&larr; Back</a></div>
+  <div class="page-header"><div><h1 class="page-title">Edit Review</h1><p class="page-sub" th:text="${review != null} ? ${review.reviewId} : ''">Review</p></div><a href="/reviews" class="btn btn-outline">&larr; Back</a></div>
   <div class="form-card">
-    <form th:action="@{/vehicles/update}" method="post" th:if="${vehicle != null}">
-      <input type="hidden" name="vehicleId" th:value="${vehicle.vehicleId}">
+    <form th:action="@{/reviews/update}" method="post" th:if="${review != null}">
+      <input type="hidden" name="reviewId" th:value="${review.reviewId}">
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Brand <span>*</span></label><input type="text" name="brand" class="form-input" th:value="${vehicle.brand}" required></div>
-        <div class="form-group"><label class="form-label">Model <span>*</span></label><input type="text" name="model" class="form-input" th:value="${vehicle.model}" required></div>
+        <div class="form-group"><label class="form-label">Customer</label><input type="text" class="form-input" th:value="${review.userName}" readonly></div>
+        <div class="form-group"><label class="form-label">Vehicle</label><input type="text" class="form-input" th:value="${review.vehicleName}" readonly></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Type <span>*</span></label><select name="type" class="form-input" required><option value="Sedan" th:selected="${vehicle.type == 'Sedan'}">Sedan</option><option value="SUV" th:selected="${vehicle.type == 'SUV'}">SUV</option><option value="Luxury" th:selected="${vehicle.type == 'Luxury'}">Luxury</option><option value="Sport" th:selected="${vehicle.type == 'Sport'}">Sport</option><option value="Van" th:selected="${vehicle.type == 'Van'}">Van</option><option value="Car" th:selected="${vehicle.type == 'Car'}">Car</option></select></div>
-        <div class="form-group"><label class="form-label">Plate Number <span>*</span></label><input type="text" name="plateNumber" class="form-input" th:value="${vehicle.plateNumber}" required></div>
+      <div class="form-group"><label class="form-label">Rating <span>*</span></label>
+        <select name="rating" class="form-input" required>
+          <option value="5" th:selected="${review.rating == 5}">5 - Excellent</option>
+          <option value="4" th:selected="${review.rating == 4}">4 - Good</option>
+          <option value="3" th:selected="${review.rating == 3}">3 - Average</option>
+          <option value="2" th:selected="${review.rating == 2}">2 - Poor</option>
+          <option value="1" th:selected="${review.rating == 1}">1 - Terrible</option>
+        </select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Daily Rate (Rs.) <span>*</span></label><input type="number" name="rentPrice" class="form-input" th:value="${vehicle.rentPrice}" step="0.01" min="0" required></div>
-        <div class="form-group"><label class="form-label">Availability</label><select name="availability" class="form-input"><option value="Available" th:selected="${vehicle.availability == 'Available'}">Available</option><option value="Rented" th:selected="${vehicle.availability == 'Rented'}">Rented</option><option value="Maintenance" th:selected="${vehicle.availability == 'Maintenance'}">Maintenance</option></select></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Image URL</label>
-        <input type="text" name="imagePath" id="imageUrl" class="form-input"
-               th:value="${vehicle.imagePath != null and vehicle.imagePath != 'none'} ? ${vehicle.imagePath} : ''"
-               oninput="previewImage(this.value)">
-        <div id="imagePreview" style="margin-top:0.75rem;display:none;">
-          <img id="previewImg" src="" alt="Preview"
-               style="width:100%;max-height:220px;border-radius:0.6rem;object-fit:cover;border:1px solid #2c2c2c;">
-        </div>
-      </div>
-      <script>
-        function previewImage(url) {
-          const preview = document.getElementById('imagePreview');
-          const img = document.getElementById('previewImg');
-          if (url && url.trim().startsWith('http')) {
-            img.src = url.trim();
-            img.onload = () => preview.style.display = 'block';
-            img.onerror = () => preview.style.display = 'none';
-          } else {
-            preview.style.display = 'none';
-          }}
-        // Show existing image on page load
-        window.addEventListener('DOMContentLoaded', function() {
-          const url = document.getElementById('imageUrl').value;
-          if (url && url.startsWith('http')) previewImage(url);
-        });
-      </script>
+      <div class="form-group"><label class="form-label">Comment <span>*</span></label><textarea name="comment" class="form-input" th:text="${review.comment}" required></textarea></div>
+      <div class="form-group"><label class="form-label">Review Date</label><input type="date" name="reviewDate" class="form-input" th:value="${review.reviewDate}"></div>
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a href="/vehicles" class="btn btn-outline">Cancel</a>
-        <form th:action="@{/vehicles/delete/{id}(id=${vehicle.vehicleId})}" method="post" style="display:inline;margin-left:auto" onsubmit="return confirm('Delete this vehicle?')"><button type="submit" class="btn btn-danger">Delete Vehicle</button></form>
+        <a href="/reviews" class="btn btn-outline">Cancel</a>
+        <form th:action="@{/reviews/delete/{id}(id=${review.reviewId})}" method="post" style="display:inline;margin-left:auto" onsubmit="return confirm('Delete review?')"><button type="submit" class="btn btn-danger">Delete</button></form>
       </div>
     </form>
   </div>

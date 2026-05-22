@@ -1,6 +1,7 @@
 package com.vehiclerental.booking;
 
 import com.vehiclerental.customer.User;
+import com.vehiclerental.payment.PaymentService;
 import com.vehiclerental.customer.UserService;
 import com.vehiclerental.vehicle.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpSession;
 public class BookingController {
 
     @Autowired private BookingService bookingService;
+    @Autowired private PaymentService paymentService;
     @Autowired private VehicleService vehicleService;
     @Autowired private UserService userService;
 
@@ -32,12 +34,15 @@ public class BookingController {
             @RequestParam String bookingId,
             @RequestParam String startDate,
             @RequestParam String endDate,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String vehicleName,
+            @RequestParam(required = false) String status,
             HttpSession session) {
         User loggedIn = (User) session.getAttribute("loggedInUser");
         if (loggedIn == null) return "redirect:/login";
         if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
             return "redirect:/bookings";
-        bookingService.updateBooking(bookingId, startDate, endDate);
+        bookingService.updateBooking(bookingId, startDate, endDate, userName, vehicleName, status);
         return "redirect:/bookings";
     }
 
@@ -56,13 +61,22 @@ public class BookingController {
         User loggedIn = (User) session.getAttribute("loggedInUser");
         if (loggedIn == null) return "redirect:/login";
         model.addAttribute("user", loggedIn);
+        java.util.List<Booking> bookings;
         if ("ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole())) {
-            model.addAttribute("bookings", bookingService.getBookingsSortedByDate());
+            bookings = bookingService.getBookingsSortedByDate();
         } else {
-            // User sees only their own bookings
-            model.addAttribute("bookings", bookingService.getBookingsSortedByDate().stream()
+            bookings = bookingService.getBookingsSortedByDate().stream()
                     .filter(b -> loggedIn.getUserId().equals(b.getUserId()))
-                    .collect(java.util.stream.Collectors.toList()));
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        model.addAttribute("bookings", bookings);
+        try {
+            java.util.Set<String> paidBookingIds = paymentService.getAllPayments().stream()
+                    .map(p -> p.getBookingId())
+                    .collect(java.util.stream.Collectors.toSet());
+            model.addAttribute("paidBookingIds", paidBookingIds);
+        } catch (Exception e) {
+            model.addAttribute("paidBookingIds", new java.util.HashSet<>());
         }
         return "booking/index";
     }

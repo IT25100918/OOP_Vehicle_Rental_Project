@@ -1,39 +1,46 @@
-# Booking Component
+# 05 — Booking Management
 
-## Files Included
+## Overview
+Manages the full booking lifecycle — create, confirm, cancel, complete. Uses a custom LinkedList (DSA) for loading booking records. Fully functional standalone Spring Boot application.
 
-### Java Backend
-- `Booking.java` — Entity model with file serialization
-- `BookingRepository.java` — File-based persistence (extends FileRepository)
-- `BookingService.java` — Business logic (create, confirm, cancel, complete, delete, sort)
-- `BookingController.java` — Spring MVC controller (GET/POST endpoints)
+## Features
 
-### Shared Dependencies
-- `FileRepository.java` — Generic file-based CRUD helper
-- `LinkedList.java` — Custom DSA linked list used in service
-- `FieldCodec.java` — Encodes/decodes comma-delimited fields safely
+| Route | Method | Description |
+|---|---|---|
+| `/bookings` | GET | List bookings (admin: all; user: own) |
+| `/bookings/add` | GET/POST | Create booking → redirects to payment |
+| `/bookings/edit/{id}` | GET | Edit booking form (admin only) |
+| `/bookings/update` | POST | Update dates/status (admin only) |
+| `/bookings/confirm/{id}` | POST | Active → Confirmed |
+| `/bookings/cancel/{id}` | POST | Cancel booking, release vehicle |
+| `/bookings/complete/{id}` | POST | Mark Completed, release vehicle |
+| `/bookings/delete/{id}` | POST | Hard delete (admin only) |
 
-### Templates
-- `booking/index.html` — List all bookings
-- `booking/add-booking.html` — Create new booking form
-- `booking/edit-booking.html` — Edit booking dates
+## Booking Status Flow
+```
+Active → Confirmed → Completed
+       ↓
+    Cancelled
+```
 
-### Data
-- `data/bookings.txt` — Seed data file
+## Key Files
+- `booking/Booking.java` — Entity with id, userId, vehicleId, userName, vehicleName, startDate, endDate, status, totalPrice
+- `booking/BookingController.java` — MVC routes + PaymentService for paidBookingIds
+- `booking/BookingService.java` — Uses custom `LinkedList<Booking>` to load records (DSA requirement)
+- `booking/BookingRepository.java` — File persistence → `data/bookings.txt`
+- `shared/LinkedList.java` — Custom DSA linked list
 
-## Endpoints
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /bookings | List bookings |
-| GET | /bookings/add | Show add form |
-| POST | /bookings/add | Create booking → redirects to payment |
-| GET | /bookings/edit/{id} | Show edit form (admin only) |
-| POST | /bookings/update | Update dates (admin only) |
-| POST | /bookings/confirm/{id} | Confirm booking (admin only) |
-| POST | /bookings/cancel/{id} | Cancel booking |
-| POST | /bookings/complete/{id} | Complete booking (admin only) |
-| POST | /bookings/delete/{id} | Delete booking (admin only) |
+## How to Run
+```bash
+mvn spring-boot:run
+```
+Visit: http://localhost:8080/bookings
 
-## External Dependencies
-BookingService uses `VehicleService` and BookingController uses `UserService`.
-These must be present in the same Spring context.
+## GitHub Setup
+```bash
+git init
+git add .
+git commit -m "feat: booking lifecycle management module"
+git remote add origin https://github.com/YOUR_USERNAME/05-booking-management.git
+git push -u origin main
+```
