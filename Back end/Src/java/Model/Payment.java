@@ -1,6 +1,6 @@
-package com.vehiclerental.payment;
+package com.vehiclerental.model;
 
-import com.vehiclerental.shared.FieldCodec;
+import com.vehiclerental.util.FieldCodec;
 
 public class Payment {
 

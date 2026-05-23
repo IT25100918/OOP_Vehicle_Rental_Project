@@ -1,4 +1,4 @@
-package com.vehiclerental.payment;
+package com.vehiclerental.servlet;
 
 import com.vehiclerental.booking.Booking;
 import com.vehiclerental.booking.BookingService;

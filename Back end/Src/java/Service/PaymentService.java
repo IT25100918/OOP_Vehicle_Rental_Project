@@ -1,4 +1,4 @@
-package com.vehiclerental.payment;
+package com.vehiclerental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
