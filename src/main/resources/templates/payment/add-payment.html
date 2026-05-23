@@ -1,107 +1,381 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Payment | Prime Vehicle Rentals</title>
+  <title>Payment | Ceylon Rides</title>
   <style>
-    :root{--primary:#2E9389;--primary-dark:#25766e;--danger:#ec4335;--bg:#000;--card:#121212;--card2:#1b1b1b;--border:#2c2c2c;--text:#fff;--muted:#888;--radius:.8rem;}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-    a{color:inherit;text-decoration:none;}
-    ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px;}
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&display=swap');
 
-    /* HEADER */
-    .header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.08);}
-    .header-inner{display:flex;justify-content:space-between;align-items:center;height:70px;padding:0 1.5rem;max-width:1300px;margin:0 auto;}
-    .brand{font-size:1.1rem;font-weight:700;color:var(--primary);letter-spacing:0.04em;}
-    .header-nav{display:flex;gap:1.5rem;}
-    .header-nav a{font-size:0.82rem;color:var(--muted);transition:color 0.2s;}
-    .header-nav a:hover{color:var(--text);}
-    .user-pill{display:flex;align-items:center;gap:0.6rem;background:var(--card2);border:1px solid var(--border);border-radius:2rem;padding:4px 12px 4px 5px;}
-    .user-av{width:28px;height:28px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.72rem;color:#fff;}
-    .user-name{font-size:0.78rem;font-weight:600;}
-    .user-role{font-size:0.58rem;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:block;}
-    .btn-logout{font-size:0.72rem;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:2rem;padding:3px 10px;}
+    :root {
+      --primary:        #c8963e;
+      --primary-dark:   #a87830;
+      --primary-light:  #f0c060;
+      --primary-glow:   rgba(200,150,62,0.2);
+      --danger:         #c0392b;
+      --warning:        #e67e22;
+      --bg:             #080604;
+      --bg2:            #0f0b07;
+      --card:           #13100a;
+      --card2:          #1c1710;
+      --border:         #2a2015;
+      --border2:        #3d3020;
+      --text:           #f0e6d3;
+      --text2:          #c9b89a;
+      --muted:          #7a6a52;
+      --radius:         .8rem;
+      --gold:           #c8963e;
+      --gold-light:     #f0c060;
+      --spice:          #8b3a1a;
+      --lotus:          #c0607a;
+      --ocean:          #1a6b7a;
+      --jungle:         #2d5a3d;
+    }
 
-    /* MAIN */
-    .main{padding-top:90px;min-height:100vh;}
-    .container{max-width:1200px;margin:0 auto;padding:0 1.5rem;}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* PAYMENT LAYOUT */
-    .payment-layout{display:grid;grid-template-columns:1fr 420px;gap:2rem;align-items:start;padding:2rem 0 4rem;}
-    @media(max-width:900px){.payment-layout{grid-template-columns:1fr;}}
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+              radial-gradient(ellipse at 0% 0%, rgba(200,150,62,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 100% 100%, rgba(139,58,26,0.04) 0%, transparent 50%);
+    }
 
-    /* LEFT — SUMMARY */
-    .left-panel{background:var(--card);border-radius:1.5rem;padding:2rem 2.5rem;}
-    .panel-back{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary);font-size:1rem;margin-bottom:1.5rem;text-decoration:none;transition:opacity 0.2s;}
-    .panel-back:hover{opacity:0.75;}
-    .panel-title{font-size:1.6rem;font-weight:700;color:var(--text);margin-bottom:2rem;}
+    a { color: inherit; text-decoration: none; }
+    p { color: var(--text2); margin-bottom: 1rem; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(var(--gold), var(--spice)); border-radius: 3px; }
 
-    /* SUMMARY ROWS */
-    .sum-row{display:flex;justify-content:space-between;align-items:flex-start;padding:1rem 0;border-bottom:1px solid var(--border);}
-    .sum-row:last-of-type{border-bottom:none;}
-    .sum-label{font-size:1rem;font-weight:500;color:var(--text);}
-    .sum-label small{display:block;font-size:0.75rem;color:var(--muted);font-weight:400;margin-top:3px;max-width:280px;line-height:1.4;}
-    .sum-label .sub-label{font-size:0.75rem;color:var(--muted);font-weight:400;display:block;margin-top:2px;}
-    .sum-val{font-size:1rem;font-weight:600;color:var(--primary);white-space:nowrap;margin-left:1rem;}
-    .sum-val.muted{color:var(--muted);}
-    .section-sep{height:1px;background:var(--border);margin:0.5rem 0;}
+    /* ── HEADER ── */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(8,6,4,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border2);
+      box-shadow: 0 1px 0 rgba(200,150,62,0.1);
+    }
+    .header-inner {
+      display: flex; justify-content: space-between; align-items: center;
+      height: 68px; padding: 0 2rem; max-width: 1280px; margin: 0 auto;
+    }
+    .header-inner::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(200,150,62,0.35), transparent);
+    }
+    .header-inner { position: relative; }
 
-    /* PAYMENT METHOD */
-    .method-section{margin-top:1.5rem;}
-    .method-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;}
-    .method-options{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-bottom:1.25rem;}
-    .method-btn{background:var(--card2);border:2px solid var(--border);border-radius:0.8rem;padding:0.75rem 1rem;font-size:0.85rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-align:center;}
-    .method-btn:hover{border-color:var(--primary);color:var(--text);}
-    .method-btn.selected{border-color:var(--primary);color:var(--primary);background:rgba(46,147,137,0.08);}
-    input[name="paymentMethod"]{display:none;}
+    /* Brand */
+    .brand, a.brand {
+      display: flex; flex-direction: column; line-height: 1;
+      text-decoration: none;
+    }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 900;
+      background: linear-gradient(135deg, #c8963e 0%, #f0c060 40%, #e8b84b 70%, #c8963e 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      letter-spacing: 0.03em;
+      filter: drop-shadow(0 0 12px rgba(200,150,62,0.3));
+    }
+    .brand-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.55rem; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(200,150,62,0.5);
+      margin-top: 1px;
+    }
 
-    /* TERMS CHECKBOX */
-    .terms-row{display:flex;align-items:center;gap:0.75rem;margin-top:1.25rem;margin-bottom:1.5rem;}
-    .terms-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;}
-    .terms-row label{font-size:0.85rem;color:var(--muted);cursor:pointer;line-height:1.4;}
-    .terms-row a{color:var(--primary);}
+    /* Nav */
+    .header-nav { display: flex; gap: 2rem; align-items: center; }
+    .header-nav a {
+      font-size: 0.82rem; color: var(--muted);
+      transition: color 0.2s; position: relative; padding-bottom: 2px;
+    }
+    .header-nav a::after {
+      content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 1px; background: var(--gold); transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+    .header-nav a:hover, .header-nav a.active { color: var(--gold-light); }
+    .header-nav a:hover::after, .header-nav a.active::after { transform: scaleX(1); }
 
-    /* CONFIRM BTN */
-    .btn-confirm{display:block;width:100%;background:#333;color:#888;border:none;border-radius:0.8rem;padding:1rem;font-size:1rem;font-weight:600;cursor:not-allowed;transition:all 0.3s;text-align:center;}
-    .btn-confirm.active{background:var(--primary);color:#fff;cursor:pointer;}
-    .btn-confirm.active:hover{background:var(--primary-dark);}
+    /* User pill */
+    .user-pill {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 2rem; padding: 4px 14px 4px 5px;
+    }
+    .user-av {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--spice));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.72rem; color: #fff;
+    }
+    .user-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .user-role { font-size: 0.58rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; display: block; }
+    .btn-logout {
+      font-size: 0.72rem; color: var(--danger);
+      background: none; border: 1px solid rgba(192,57,43,0.4);
+      border-radius: 2rem; padding: 4px 12px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: rgba(192,57,43,0.1); }
 
-    /* RIGHT — VEHICLE CARD */
-    .right-panel{background:var(--card);border-radius:1.5rem;overflow:hidden;position:sticky;top:88px;}
-    .vehicle-img{width:100%;height:220px;background:var(--card2);display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    .vehicle-img img{width:100%;height:100%;object-fit:cover;}
-    .vehicle-img .emoji{font-size:5rem;}
-    .vehicle-info{padding:1.5rem;}
-    .vehicle-name{font-size:1.3rem;font-weight:700;margin-bottom:1.25rem;}
-    .pickup-return{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;}
-    .pr-box{}
-    .pr-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;}
-    .pr-date{font-size:1.6rem;font-weight:700;color:var(--text);line-height:1;}
-    .pr-time{font-size:0.82rem;color:var(--primary);margin-top:4px;}
-    .pr-addr{font-size:0.78rem;color:var(--muted);margin-top:0.5rem;line-height:1.4;}
-    .total-bar{border-top:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:0.5rem;}
-    .total-label{font-size:1rem;color:var(--muted);}
-    .total-amount{font-size:2rem;font-weight:700;color:var(--text);}
-    .total-days{font-size:0.82rem;color:var(--muted);}
+    /* ── MAIN ── */
+    .main { padding-top: 90px; min-height: 100vh; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
 
-    /* ALERT */
-    .alert{padding:0.75rem 1rem;border-radius:0.6rem;margin-bottom:1rem;font-size:0.85rem;}
-    .alert-error{background:rgba(236,67,53,0.1);border:1px solid rgba(236,67,53,0.3);color:var(--danger);}
+    /* Page header */
+    .page-header {
+      padding: 2rem 0 1.5rem;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      position: relative; margin-bottom: 2rem;
+    }
+    .page-header::after {
+      content: '❖';
+      position: absolute; bottom: -0.65rem; left: 50%;
+      transform: translateX(-50%);
+      color: var(--gold); font-size: 0.65rem;
+      background: var(--bg); padding: 0 0.6rem;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; line-height: 1;
+      background: linear-gradient(135deg, #c8963e, #f0c060);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .page-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; font-family: 'Cormorant Garamond', serif; letter-spacing: 0.05em; }
 
-    /* FOOTER */
-    footer{background:var(--card);border-top:1px solid var(--border);padding:1.5rem;text-align:center;}
-    .footer-links{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:0.75rem;}
-    .footer-links a{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
-    .footer-links a:hover{color:var(--text);}
-    .copyright{font-size:0.7rem;color:var(--muted);}
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      position: relative; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(to right, var(--gold), var(--spice));
+    }
+    .stat-card:hover { border-color: var(--border2); }
+    .stat-card h4 { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.5rem; font-weight: 400; text-transform: uppercase; letter-spacing: 0.07em; }
+    .stat-val { font-size: 2rem; font-weight: 700; color: var(--gold-light); line-height: 1; }
+
+    /* Panel */
+    .panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .panel-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+      background: linear-gradient(to right, rgba(200,150,62,0.06), rgba(139,58,26,0.03), transparent);
+      position: relative;
+    }
+    .panel-hdr::after {
+      content: ''; position: absolute; bottom: 0; left: 1.5rem; right: 1.5rem; height: 1px;
+      background: linear-gradient(to right, rgba(200,150,62,0.3), transparent);
+    }
+    .panel-hdr h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 700; color: #e8d5b0; margin: 0;
+    }
+    .panel-hdr h3::before { content: '✦ '; color: var(--gold); font-size: 0.7rem; }
+    .panel-link { color: var(--gold); font-size: 0.78rem; transition: color 0.2s; }
+    .panel-link:hover { color: var(--gold-light); }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th {
+      padding: 0.75rem 1.25rem; text-align: left;
+      color: var(--muted); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      background: rgba(200,150,62,0.03);
+      border-bottom: 1px solid var(--border); font-weight: 500;
+    }
+    td { padding: 0.9rem 1.25rem; color: var(--text); border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(200,150,62,0.04); }
+    td.muted { color: var(--muted); font-size: 0.75rem; }
+    td.primary { color: var(--gold-light); font-weight: 600; }
+
+    /* Pills */
+    .pill { display: inline-block; padding: 3px 12px; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; }
+    .pill-active, .pill-Available    { background: rgba(200,150,62,0.12); color: #f0c060; border: 1px solid rgba(200,150,62,0.25); }
+    .pill-Confirmed, .pill-Paid, .pill-Approved { background: rgba(45,90,61,0.2); color: #6ec98a; border: 1px solid rgba(45,90,61,0.3); }
+    .pill-Completed  { background: rgba(26,107,122,0.15); color: #5bc4d8; border: 1px solid rgba(26,107,122,0.3); }
+    .pill-Cancelled, .pill-Inactive, .pill-Overdue { background: rgba(192,57,43,0.12); color: #e07060; border: 1px solid rgba(192,57,43,0.25); }
+    .pill-Pending, .pill-Maintenance, .pill-Rented  { background: rgba(230,126,34,0.12); color: #e8a040; border: 1px solid rgba(230,126,34,0.25); }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 0.6rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; text-decoration: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--spice)); color: #fff; border-color: transparent; }
+    .btn-primary:hover { background: linear-gradient(135deg, var(--gold-light), var(--gold)); transform: translateY(-1px); }
+    .btn-danger { background: transparent; color: var(--danger); border-color: rgba(192,57,43,0.4); }
+    .btn-danger:hover { background: rgba(192,57,43,0.1); }
+    .btn-outline { background: transparent; color: var(--gold); border-color: rgba(200,150,62,0.4); }
+    .btn-outline:hover { background: rgba(200,150,62,0.08); color: var(--gold-light); }
+    .btn-sm { padding: 0.28rem 0.7rem; font-size: 0.73rem; }
+
+    /* Filters */
+    .filters { display: flex; gap: 0.75rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .search-box { display: flex; align-items: center; gap: 0.5rem; background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.5rem 0.85rem; flex: 1; min-width: 180px; transition: border-color 0.2s; }
+    .search-box:focus-within { border-color: rgba(200,150,62,0.4); }
+    .search-box input { background: none; border: none; outline: none; color: var(--text); font-size: 0.82rem; width: 100%; }
+    .search-box input::placeholder { color: var(--muted); }
+    select.filter-select { background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.5rem 0.85rem; color: var(--text); font-size: 0.82rem; outline: none; cursor: pointer; }
+
+    /* Forms */
+    .form-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; max-width: 800px; margin: 0 auto; position: relative; }
+    .form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, var(--gold), var(--spice), var(--lotus)); border-radius: var(--radius) var(--radius) 0 0; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.45rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+    .form-label span { color: var(--danger); }
+    .form-input { width: 100%; background: var(--card2); border: 1px solid var(--border2); border-radius: 0.6rem; padding: 0.7rem 1rem; color: var(--text); font-family: inherit; font-size: 0.88rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,150,62,0.1); }
+    .form-input::placeholder { color: var(--muted); }
+    select.form-input { cursor: pointer; }
+    textarea.form-input { resize: vertical; min-height: 100px; }
+    .form-input[readonly] { opacity: 0.5; cursor: not-allowed; }
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1.75rem; }
+
+    /* Auth */
+    .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .auth-card { background: var(--card); border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 420px; border: 1px solid var(--border2); position: relative; overflow: hidden; }
+    .auth-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, var(--gold), var(--spice), var(--lotus)); }
+    .auth-logo { text-align: center; margin-bottom: 1.5rem; }
+    .auth-logo .logo-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, #c8963e, #f0c060); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .auth-logo .logo-sub { font-family: 'Cormorant Garamond', serif; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 0.2rem; }
+    .auth-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; text-align: center; margin-bottom: 0.4rem; color: var(--text); }
+    .auth-sub { font-size: 0.82rem; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
+    .alert { padding: 0.75rem 1rem; border-radius: 0.6rem; font-size: 0.82rem; margin-bottom: 1rem; }
+    .alert-error { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: #e07060; }
+    .alert-success { background: rgba(200,150,62,0.1); border: 1px solid rgba(200,150,62,0.3); color: var(--gold-light); }
+    .auth-footer { text-align: center; font-size: 0.78rem; color: var(--muted); margin-top: 1.25rem; }
+    .auth-footer a { color: var(--gold); }
+
+    /* Footer */
+    footer { background: var(--card); border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 3rem; text-align: center; }
+    footer::before { content: ''; display: block; height: 1px; background: linear-gradient(to right, transparent, var(--gold), var(--spice), var(--gold), transparent); margin-bottom: 1.25rem; }
+    footer .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    footer .footer-links a { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); transition: color 0.2s; }
+    footer .footer-links a:hover { color: var(--gold); }
+    .copyright { color: var(--muted); font-family: 'Cormorant Garamond', serif; font-size: 0.82rem; letter-spacing: 0.06em; }
+
+    /* Ornament between sections */
+    .section-ornament { text-align: center; color: var(--gold); font-size: 0.7rem; margin: 1.5rem 0; letter-spacing: 0.3em; opacity: 0.6; }
+
+
+  /* ── PAYMENT LAYOUT ── */
+  .payment-layout { display:grid; grid-template-columns:560px 1fr; gap:2rem; align-items:start; padding-bottom:3rem; }
+  @media(max-width:900px) { .payment-layout { grid-template-columns:1fr; } }
+
+  .left-col { display:flex; flex-direction:column; gap:1.5rem; }
+  .right-col { position:sticky; top:88px; }
+
+  /* Summary panel */
+  .summary-panel { background:var(--card); border:1px solid var(--border); border-radius:1rem; overflow:hidden; }
+  .summary-panel-title { padding:1rem 1.5rem; border-bottom:1px solid var(--border); font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:700; color:#e8d5b0; background:linear-gradient(to right, rgba(200,150,62,0.06), transparent); }
+  .summary-panel-title::before { content:'✦ '; color:var(--gold); font-size:0.7rem; }
+  .summary-body { padding:1rem 1.5rem; }
+
+  .sum-row { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+  .sum-row:last-child { border-bottom:none; }
+  .sum-label { font-size:0.82rem; color:var(--muted); }
+  .sum-val { font-size:0.88rem; color:var(--text); font-weight:500; text-align:right; }
+  .sum-val.primary { color:var(--gold-light); }
+
+  /* Total bar */
+  .total-bar { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; background:linear-gradient(to right, rgba(200,150,62,0.06), transparent); border-top:1px solid var(--border); }
+  .total-label { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--text); }
+  .total-amount { font-size:1.4rem; font-weight:700; color:var(--gold-light); }
+
+  /* Form section card */
+  .form-section { background:var(--card); border:1px solid var(--border); border-radius:1rem; padding:1.5rem; }
+  .form-section-title { font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:700; color:#e8d5b0; margin-bottom:1.25rem; }
+  .form-section-title::before { content:'✦ '; color:var(--gold); font-size:0.7rem; }
+
+  /* Method options */
+  .method-options { display:grid; grid-template-columns:repeat(4,1fr); gap:0.75rem; margin-bottom:1rem; }
+  .method-btn { display:flex; flex-direction:column; align-items:center; gap:0.4rem; padding:0.85rem 0.5rem; border:1px solid var(--border2); border-radius:0.8rem; background:var(--card2); cursor:pointer; transition:all 0.2s; font-size:0.75rem; color:var(--muted); }
+  .method-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .method-btn.selected { border-color:var(--gold); background:rgba(200,150,62,0.1); color:var(--gold); font-weight:600; }
+  .method-icon { font-size:1.4rem; }
+
+  /* Terms */
+  .terms-row { display:flex; align-items:center; gap:0.75rem; margin-top:1rem; }
+  .terms-row input[type=checkbox] { width:16px; height:16px; accent-color:var(--gold); cursor:pointer; }
+  .terms-row label { font-size:0.78rem; color:var(--muted); cursor:pointer; }
+
+  .btn-pay { display:block; width:100%; background:linear-gradient(135deg,var(--gold),var(--spice)); color:#fff; border:none; border-radius:0.8rem; padding:1rem; font-size:1rem; font-weight:700; cursor:pointer; margin-top:1rem; transition:opacity 0.2s; }
+  .btn-pay:hover { opacity:0.9; }
+  .btn-confirm {
+    display: block; width: 100%;
+    background: linear-gradient(135deg, #c8963e 0%, #8b3a1a 100%);
+    color: #fff; border: none; border-radius: 0.8rem;
+    padding: 1rem 1.5rem; font-size: 1rem; font-weight: 700;
+    cursor: pointer; margin-top: 1.25rem;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    transition: opacity 0.2s, transform 0.1s;
+    font-family: 'Cormorant Garamond', serif;
+    box-shadow: 0 4px 15px rgba(200,150,62,0.3);
+  }
+  .btn-confirm:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+  .btn-confirm:disabled {
+    background: #2a2015; color: #7a6a52;
+    cursor: not-allowed; box-shadow: none;
+    border: 1px solid #3d3020;
+  }
+  .terms-row { display:flex; align-items:center; gap:0.75rem; margin-top:1.25rem; padding:1rem; background:var(--card2); border-radius:0.7rem; border:1px solid var(--border); }
+  .terms-row input[type=checkbox] { width:18px; height:18px; accent-color:var(--gold); cursor:pointer; flex-shrink:0; }
+  .terms-row label { font-size:0.8rem; color:var(--muted); cursor:pointer; line-height:1.4; }
+  .terms-row label a { color:var(--gold); text-decoration:underline; }
+
+  .empty-td { text-align:center; color:var(--muted); padding:2rem; }
+  /* Vehicle card right panel */
+  .vehicle-img { width:100%; height:220px; background:var(--card2); border-radius:0.8rem 0.8rem 0 0; overflow:hidden; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--border); }
+  .vehicle-img img { width:100%; height:100%; object-fit:cover; object-position:center; }
+  .vehicle-img .emoji { font-size:4rem; opacity:0.4; }
+  .vehicle-info { background:var(--card); border:1px solid var(--border); border-top:none; padding:1.25rem 1.5rem; }
+  .vehicle-name { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--text); margin-bottom:1rem; }
+  .pickup-return { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .pr-box { background:var(--card2); border-radius:0.6rem; padding:0.75rem 1rem; }
+  .pr-label { font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .pr-date { font-size:1rem; font-weight:700; color:var(--text); }
+  .pr-time { font-size:0.75rem; color:var(--gold); margin-top:0.2rem; }
+  .pr-addr { font-size:0.7rem; color:var(--muted); margin-top:0.15rem; }
+
+  .left-panel { position:sticky; top:88px; }
+  .right-panel { display:flex; flex-direction:column; gap:1.5rem; }
+  .panel-back { color:var(--muted); font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:1rem; display:block; }
+  .panel-back:hover { color:var(--gold); }
+  .vehicle-summary { background:var(--card); border:1px solid var(--border); border-radius:1rem; overflow:hidden; }
+  .vehicle-summary-img { width:100%; height:180px; background:var(--card2); display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--border); }
+  .vehicle-summary-img img { width:100%; height:100%; object-fit:contain; padding:0.5rem; }
+  .vehicle-summary-name { padding:1rem 1.5rem 0; font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--text); }
+  .no-vehicle { text-align:center; padding:2rem; color:var(--muted); }
+  .no-vehicle .emoji { font-size:2.5rem; display:block; margin-bottom:0.5rem; opacity:0.4; }
+
+
   </style>
 </head>
 <body>
 
 <header class="header">
   <div class="header-inner">
-    <a href="/dashboard" class="brand">Prime Vehicle Rentals</a>
+    <a href="/dashboard" class="brand"><span class="brand-name">Ceylon Rides</span><span class="brand-sub">Journey of Ceylon</span></a>
     <nav class="header-nav">
       <a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
       <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
@@ -127,6 +401,7 @@
       <input type="hidden" name="paymentDate" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
       <input type="hidden" name="status" value="Paid">
       <input type="hidden" name="amount" th:value="${selectedBooking != null} ? ${selectedBooking.totalPrice} : 0" id="hiddenAmount">
+      <input type="hidden" name="taxAmount" id="hiddenTax" value="0">
       <input type="hidden" name="paymentMethod" id="hiddenMethod" value="Cash">
 
       <div class="payment-layout">
@@ -148,8 +423,16 @@
               <div class="sum-val primary" th:text="${selectedBooking.startDate + ' to ' + selectedBooking.endDate}">—</div>
             </div>
             <div class="sum-row">
-              <div class="sum-label">Total Amount</div>
-              <div class="sum-val" th:text="'Rs. ' + ${selectedBooking.totalPrice}">Rs. 0</div>
+              <div class="sum-label">Rental Amount</div>
+              <div class="sum-val" id="subtotalDisplay" th:text="'Rs. ' + ${selectedBooking.totalPrice}">Rs. 0</div>
+            </div>
+            <div class="sum-row">
+              <div class="sum-label">VAT (8%)</div>
+              <div class="sum-val" id="taxDisplay">Rs. 0</div>
+            </div>
+            <div class="sum-row" style="border-top:2px solid var(--primary);margin-top:0.25rem;padding-top:1rem;">
+              <div class="sum-label" style="font-size:1.1rem;font-weight:700;color:var(--text);">Grand Total</div>
+              <div class="sum-val" id="grandTotalDisplay" style="font-size:1.2rem;">Rs. 0</div>
             </div>
             <div class="sum-row">
               <div class="sum-label">Pick up from garage</div>
@@ -176,7 +459,7 @@
                   <option value="">Select a booking...</option>
                   <option th:each="b : ${bookings}"
                           th:value="${b.bookingId}"
-                          th:text="${b.bookingId + ' — ' + b.userName + ' — Rs.' + b.totalPrice}"
+                          th:text="${b.bookingId + ' — ' + b.vehicleName + ' — Rs.' + b.totalPrice}"
                           th:attr="data-amount=${b.totalPrice}">Booking</option>
                 </select>
               </div>
@@ -196,6 +479,80 @@
               <div class="method-btn" onclick="selectMethod('Bank Transfer', this)">🏦 Bank Transfer</div>
               <div class="method-btn" onclick="selectMethod('Online', this)">📱 Online</div>
             </div>
+          </div>
+
+          <!-- Payment Details (hidden for Cash) -->
+          <div id="paymentDetails" style="display:none; margin-top:1.25rem;">
+
+            <!-- CARD fields -->
+            <div id="cardFields" style="display:none;">
+              <div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;">Card Details</div>
+              <div style="margin-bottom:0.9rem;">
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Cardholder Name</label>
+                <input type="text" id="cardName" placeholder="Name on card" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;">
+              </div>
+              <div style="margin-bottom:0.9rem;">
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Card Number</label>
+                <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;" oninput="formatCard(this)">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                <div>
+                  <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Expiry Date</label>
+                  <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;" oninput="formatExpiry(this)">
+                </div>
+                <div>
+                  <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">CVV</label>
+                  <input type="text" id="cardCvv" placeholder="•••" maxlength="3" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;">
+                </div>
+              </div>
+            </div>
+
+            <!-- BANK TRANSFER fields -->
+            <div id="bankFields" style="display:none;">
+              <div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;">Bank Transfer Details</div>
+              <div style="background:var(--card2);border:1px solid var(--border);border-radius:0.8rem;padding:1rem 1.25rem;margin-bottom:0.9rem;">
+                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;">Transfer funds to:</div>
+                <div style="font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Ceylon Rides (Pvt) Ltd</div>
+                <div style="font-size:0.82rem;color:var(--muted);">Bank of Ceylon &nbsp;|&nbsp; Branch: Kandy</div>
+                <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem;">Account No: <span >7890 1234 5678</span></div>
+              </div>
+              <div style="margin-bottom:0.9rem;">
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Your Name</label>
+                <input type="text" id="bankName" placeholder="Full name of account holder" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;">
+              </div>
+              <div style="margin-bottom:0.9rem;">
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Transaction / Reference No</label>
+                <input type="text" id="bankRef" placeholder="e.g. TXN123456789" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;">
+              </div>
+              <div>
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Your Bank Name</label>
+                <input type="text" id="bankSender" placeholder="e.g. Sampath Bank" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;">
+              </div>
+            </div>
+
+            <!-- ONLINE fields -->
+            <div id="onlineFields" style="display:none;">
+              <div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;">Online Payment Details</div>
+              <div style="margin-bottom:0.9rem;">
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Payment Platform</label>
+                <select id="onlinePlatform" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;cursor:pointer;">
+                  <option value="">Select platform...</option>
+                  <option>PayHere</option>
+                  <option>FriMi</option>
+                  <option>eZ Cash</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div style="margin-bottom:0.9rem;">
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Registered Mobile / Email</label>
+                <input type="text" id="onlineContact" placeholder="Mobile number or email" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;">
+              </div>
+              <div>
+                <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Transaction ID</label>
+                <input type="text" id="onlineTxn" placeholder="e.g. PH-20260501-XXXXX" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:0.6rem;padding:0.65rem 0.9rem;color:var(--text);font-size:0.85rem;outline:none;">
+              </div>
+            </div>
+
           </div>
 
           <!-- Terms -->
@@ -230,13 +587,13 @@
                 <div class="pr-label">Pick-Up</div>
                 <div class="pr-date" th:text="${#strings.replace(selectedBooking.startDate, '-', '/')}">—</div>
                 <div class="pr-time" style="color:var(--primary);">02:00 PM</div>
-                <div class="pr-addr">Prime Vehicle Rentals Garage</div>
+                <div class="pr-addr">Ceylon Rides Garage</div>
               </div>
               <div class="pr-box">
                 <div class="pr-label">Return</div>
                 <div class="pr-date" th:text="${#strings.replace(selectedBooking.endDate, '-', '/')}">—</div>
                 <div class="pr-time" style="color:var(--primary);">02:00 PM</div>
-                <div class="pr-addr">Prime Vehicle Rentals Garage</div>
+                <div class="pr-addr">Ceylon Rides Garage</div>
               </div>
             </div>
 
@@ -248,9 +605,19 @@
           </div>
 
           <!-- Total bar -->
-          <div class="total-bar" th:if="${selectedBooking != null}">
-            <span class="total-label">Total:</span>
-            <span class="total-amount" th:text="'Rs. ' + ${selectedBooking.totalPrice}">Rs. 0</span>
+          <div th:if="${selectedBooking != null}">
+            <div style="padding:0.6rem 1.5rem;display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--border);">
+              <span style="font-size:0.8rem;color:var(--muted);">Rental</span>
+              <span style="font-size:0.9rem;color:var(--muted);" id="subtotalBar" th:text="'Rs. ' + ${selectedBooking.totalPrice}">Rs. 0</span>
+            </div>
+            <div style="padding:0.6rem 1.5rem;display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="font-size:0.8rem;color:var(--muted);">VAT (8%)</span>
+              <span style="font-size:0.9rem;color:var(--muted);" id="taxBar">Rs. 0</span>
+            </div>
+            <div class="total-bar" style="border-top:1px solid var(--border);">
+              <span class="total-label">Grand Total:</span>
+              <span class="total-amount" id="grandTotalBar">Rs. 0</span>
+            </div>
           </div>
         </div>
 
@@ -265,7 +632,7 @@
     <a href="/dashboard">Dashboard</a><a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a>
     <a href="/payments">Payments</a><a href="/reviews">Reviews</a><a href="/logout">Logout</a>
   </div>
-  <div class="copyright">&copy; 2026 PRIME VEHICLE RENTALS. ALL RIGHTS RESERVED.</div>
+  <div class="copyright">&copy; 2026 Ceylon Rides · Rooted in Ceylon, Driven by Passion · ALL RIGHTS RESERVED.</div>
 </footer>
 
 <script>
@@ -274,6 +641,38 @@
     document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     document.getElementById('hiddenMethod').value = method;
+
+    // Show/hide detail panels
+    const details = document.getElementById('paymentDetails');
+    const cardF   = document.getElementById('cardFields');
+    const bankF   = document.getElementById('bankFields');
+    const onlineF = document.getElementById('onlineFields');
+
+    cardF.style.display   = 'none';
+    bankF.style.display   = 'none';
+    onlineF.style.display = 'none';
+
+    if (method === 'Cash') {
+      details.style.display = 'none';
+    } else {
+      details.style.display = 'block';
+      if (method === 'Card')          cardF.style.display   = 'block';
+      else if (method === 'Bank Transfer') bankF.style.display = 'block';
+      else if (method === 'Online')   onlineF.style.display = 'block';
+    }
+  }
+
+  // Card number formatter: 1234 5678 9012 3456
+  function formatCard(input) {
+    let v = input.value.replace(/\D/g, '').substring(0, 16);
+    input.value = v.replace(/(.{4})/g, '$1 ').trim();
+  }
+
+  // Expiry formatter: MM/YY
+  function formatExpiry(input) {
+    let v = input.value.replace(/\D/g, '').substring(0, 4);
+    if (v.length >= 3) v = v.substring(0,2) + '/' + v.substring(2);
+    input.value = v;
   }
 
   // Enable confirm button only when terms checked
@@ -294,6 +693,7 @@
     if (amount) {
       if (amountField) amountField.value = amount;
       if (hiddenAmount) hiddenAmount.value = amount;
+      calculateTax(parseFloat(amount));
     }
     if (hiddenBooking && select.value) hiddenBooking.value = select.value;
   }
@@ -310,6 +710,33 @@
   window.addEventListener('DOMContentLoaded', function() {
     const sel = document.getElementById('bookingSelect');
     if (sel && sel.value) fillAmount(sel);
+    // Calculate tax on load for pre-selected booking
+    const hiddenAmount = document.getElementById('hiddenAmount');
+    if (hiddenAmount && hiddenAmount.value) {
+      calculateTax(parseFloat(hiddenAmount.value));
+    }
   });
+
+  function calculateTax(subtotal) {
+    const TAX_RATE = 0.08;
+    const tax = subtotal * TAX_RATE;
+    const grand = subtotal + tax;
+
+    const fmt = v => 'Rs. ' + v.toLocaleString('en-LK', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+    // Left summary panel
+    if (document.getElementById('taxDisplay'))       document.getElementById('taxDisplay').textContent       = fmt(tax);
+    if (document.getElementById('grandTotalDisplay')) document.getElementById('grandTotalDisplay').textContent = fmt(grand);
+
+    // Right vehicle card
+    if (document.getElementById('taxBar'))           document.getElementById('taxBar').textContent           = fmt(tax);
+    if (document.getElementById('grandTotalBar'))    document.getElementById('grandTotalBar').textContent    = fmt(grand);
+
+    // Update hidden fields so form submits grand total
+    if (document.getElementById('hiddenAmount'))     document.getElementById('hiddenAmount').value           = grand.toFixed(2);
+    if (document.getElementById('hiddenTax'))        document.getElementById('hiddenTax').value              = tax.toFixed(2);
+  }
+
+
 </script>
 </body></html>
