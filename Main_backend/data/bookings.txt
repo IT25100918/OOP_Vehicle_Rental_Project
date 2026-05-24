@@ -1,2 +1,0 @@
-B8707540a6813,Ud1fec647c69b,Vabd35ac355aa,Kaweesha,Mercedes G Wagon,2026-05-21,2026-05-26,Cancelled,275000.0
-B2257f598ac4e,Ud1fec647c69b,V1778596522695,Kaweesha,Rolls Royce Phantom,2026-05-22,2026-05-23,Active,100000.0
