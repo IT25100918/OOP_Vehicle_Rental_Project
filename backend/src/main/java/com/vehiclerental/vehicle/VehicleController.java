@@ -20,6 +20,7 @@ public class VehicleController {
 
     @GetMapping("/vehicles")
     public String listVehicles(Model model, HttpSession session) {
+        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
         model.addAttribute("user", session.getAttribute("loggedInUser"));
         model.addAttribute("vehicles", vehicleService.getAllVehicles());
         return "vehicle/index";
