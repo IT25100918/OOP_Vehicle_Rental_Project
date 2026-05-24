@@ -1,48 +1,30 @@
 package com.vehiclerental.shared;
 
 import com.vehiclerental.vehicle.Vehicle;
+import java.util.Comparator;
 import java.util.List;
 
-/**
- * Selection sort implementations for domain entities.
- */
 public class SelectionSort {
 
-    public static void sortVehiclesByPrice(List<Vehicle> vehicles) {
-        int n = vehicles.size();
+    public static <T> void sort(List<T> list, Comparator<T> comparator) {
+        int n = list.size();
         for (int i = 0; i < n - 1; i++) {
             int minIndex = i;
             for (int j = i + 1; j < n; j++) {
-                if (vehicles.get(j).getRentPrice() < vehicles.get(minIndex).getRentPrice())
+                if (comparator.compare(list.get(j), list.get(minIndex)) < 0)
                     minIndex = j;
             }
-            Vehicle temp = vehicles.get(minIndex);
-            vehicles.set(minIndex, vehicles.get(i));
-            vehicles.set(i, temp);
+            T temp = list.get(minIndex);
+            list.set(minIndex, list.get(i));
+            list.set(i, temp);
         }
+    }
+
+    public static void sortVehiclesByPrice(List<Vehicle> vehicles) {
+        sort(vehicles, Comparator.comparingDouble(Vehicle::getRentPrice));
     }
 
     public static void sortVehiclesByAvailability(List<Vehicle> vehicles) {
-        int n = vehicles.size();
-        for (int i = 0; i < n - 1; i++) {
-            int minIndex = i;
-            for (int j = i + 1; j < n; j++) {
-                if (availabilityRank(vehicles.get(j).getAvailability())
-                        < availabilityRank(vehicles.get(minIndex).getAvailability()))
-                    minIndex = j;
-            }
-            Vehicle temp = vehicles.get(minIndex);
-            vehicles.set(minIndex, vehicles.get(i));
-            vehicles.set(i, temp);
-        }
-    }
-
-    private static int availabilityRank(String availability) {
-        switch (availability) {
-            case "Available":   return 0;
-            case "Rented":      return 1;
-            case "Maintenance": return 2;
-            default:            return 3;
-        }
+        sort(vehicles, Comparator.comparing(Vehicle::getAvailability));
     }
 }
