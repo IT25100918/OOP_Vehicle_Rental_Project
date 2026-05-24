@@ -1,6 +1,10 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Edit Vehicle | Ceylon Rides</title>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edit Booking | Ceylon Rides</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&display=swap');
 
@@ -273,70 +277,120 @@
     /* Ornament between sections */
     .section-ornament { text-align: center; color: var(--gold); font-size: 0.7rem; margin: 1.5rem 0; letter-spacing: 0.3em; opacity: 0.6; }
 
-  </style></head>
+  </style>
+</head>
 <body>
-<header class="header"><div class="header-inner">
-  <a href="/dashboard" class="brand"><span class="brand-name">Ceylon Rides</span><span class="brand-sub">Journey of Ceylon</span></a>
-  <nav class="header-nav">
-    <a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
-    <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
-    <a href="/admins" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
-  </nav>
-  <div style="display:flex;align-items:center;gap:0.75rem;">
-    <div class="user-pill"><div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
-      <div><span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">Guest</span><span class="user-role" th:text="${user != null} ? ${user.role} : ''">Role</span></div></div>
-    <a href="/logout" class="btn-logout">Logout</a>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/dashboard" class="brand"><span class="brand-name">Ceylon Rides</span><span class="brand-sub">Journey of Ceylon</span></a>
+    <nav class="header-nav">
+      <a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
+      <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
+      <a href="/admins" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div class="user-pill">
+        <div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
+        <div><span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">Guest</span><span class="user-role" th:text="${user != null} ? ${user.role} : ''">Role</span></div>
+      </div>
+      <a href="/logout" class="btn-logout">Logout</a>
+    </div>
   </div>
-</div></header>
-<main class="main"><div class="container">
-  <div class="page-header"><div><h1 class="page-title">Edit Vehicle</h1><p class="page-sub" th:text="${vehicle != null} ? ${vehicle.brand + ' ' + vehicle.model} : ''">Vehicle</p></div><a href="/vehicles" class="btn btn-outline">&larr; Back</a></div>
-  <div class="form-card">
-    <form th:action="@{/vehicles/update}" method="post" th:if="${vehicle != null}">
-      <input type="hidden" name="vehicleId" th:value="${vehicle.vehicleId}">
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Brand <span>*</span></label><input type="text" name="brand" class="form-input" th:value="${vehicle.brand}" required></div>
-        <div class="form-group"><label class="form-label">Model <span>*</span></label><input type="text" name="model" class="form-input" th:value="${vehicle.model}" required></div>
+</header>
+
+<main class="main">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Edit Booking</h1>
+        <p class="page-sub" th:text="${booking != null} ? 'Booking ID: ' + ${booking.bookingId} : ''">Booking</p>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Type <span>*</span></label><select name="type" class="form-input" required><option value="Sedan" th:selected="${vehicle.type == 'Sedan'}">Sedan</option><option value="SUV" th:selected="${vehicle.type == 'SUV'}">SUV</option><option value="Luxury" th:selected="${vehicle.type == 'Luxury'}">Luxury</option><option value="Sport" th:selected="${vehicle.type == 'Sport'}">Sport</option><option value="Van" th:selected="${vehicle.type == 'Van'}">Van</option><option value="Car" th:selected="${vehicle.type == 'Car'}">Car</option></select></div>
-        <div class="form-group"><label class="form-label">Plate Number <span>*</span></label><input type="text" name="plateNumber" class="form-input" th:value="${vehicle.plateNumber}" required></div>
+      <a href="/bookings" class="back-btn">&larr; Back to Bookings</a>
+    </div>
+
+    <!-- Booking Info Summary -->
+    <div class="info-card" th:if="${booking != null}">
+      <div class="info-row">
+        <span class="info-label">Customer</span>
+        <span class="info-val" th:text="${booking.userName}">—</span>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Daily Rate (Rs.) <span>*</span></label><input type="number" name="rentPrice" class="form-input" th:value="${vehicle.rentPrice}" step="0.01" min="0" required></div>
-        <div class="form-group"><label class="form-label">Availability</label><select name="availability" class="form-input"><option value="Available" th:selected="${vehicle.availability == 'Available'}">Available</option><option value="Rented" th:selected="${vehicle.availability == 'Rented'}">Rented</option><option value="Maintenance" th:selected="${vehicle.availability == 'Maintenance'}">Maintenance</option></select></div>
+      <div class="info-row">
+        <span class="info-label">Vehicle</span>
+        <span class="info-val" th:text="${booking.vehicleName}">—</span>
       </div>
-      <div class="form-group">
-        <label class="form-label">Image URL</label>
-        <input type="text" name="imagePath" id="imageUrl" class="form-input"
-               th:value="${vehicle.imagePath != null and vehicle.imagePath != 'none'} ? ${vehicle.imagePath} : ''"
-               oninput="previewImage(this.value)">
-        <div id="imagePreview" style="margin-top:0.75rem;display:none;">
-          <img id="previewImg" src="" alt="Preview"
-               style="width:100%;max-height:220px;border-radius:0.6rem;object-fit:cover;border:1px solid #2c2c2c;">
+      <div class="info-row">
+        <span class="info-label">Total Price</span>
+        <span class="info-val primary" th:text="'Rs. ' + ${booking.totalPrice}">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Status</span>
+        <span class="status-pill" th:classappend="'pill-' + ${booking.status}" th:text="${booking.status}">—</span>
+      </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="form-card" th:if="${booking != null}">
+      <form th:action="@{/bookings/update}" method="post">
+        <input type="hidden" name="bookingId" th:value="${booking.bookingId}">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Customer</label>
+            <input type="text" name="userName" class="form-input" th:value="${booking.userName}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vehicle</label>
+            <input type="text" name="vehicleName" class="form-input" th:value="${booking.vehicleName}">
+          </div>
         </div>
-      </div>
-      <script>
-        function previewImage(url) {
-          const preview = document.getElementById('imagePreview');
-          const img = document.getElementById('previewImg');
-          if (url && url.trim().startsWith('http')) {
-            img.src = url.trim();
-            img.onload = () => preview.style.display = 'block';
-            img.onerror = () => preview.style.display = 'none';
-          } else {
-            preview.style.display = 'none';
-          }}
-        // Show existing image on page load
-        window.addEventListener('DOMContentLoaded', function() {
-          const url = document.getElementById('imageUrl').value;
-          if (url && url.startsWith('http')) previewImage(url);
-        });
-      </script>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a href="/vehicles" class="btn btn-outline">Cancel</a>
-        <form th:action="@{/vehicles/delete/{id}(id=${vehicle.vehicleId})}" method="post" style="display:inline;margin-left:auto" onsubmit="return confirm('Delete this vehicle?')"><button type="submit" class="btn btn-danger">Delete Vehicle</button></form>
-      </div>
-    </form>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">New Start Date <span>*</span></label>
+            <input type="date" name="startDate" class="form-input" th:value="${booking.startDate}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New End Date <span>*</span></label>
+            <input type="date" name="endDate" class="form-input" th:value="${booking.endDate}" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-input">
+            <option value="Active" th:selected="${booking.status == 'Active'}">Active</option><option value="Confirmed" th:selected="${booking.status == 'Confirmed'}">Confirmed</option><option value="Completed" th:selected="${booking.status == 'Completed'}">Completed</option><option value="Cancelled" th:selected="${booking.status == 'Cancelled'}">Cancelled</option><!--
+                    th:value="${s}" th:text="${s}"
+                    th:selected="${s == booking.status}">Status</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="/bookings" class="btn btn-outline">Cancel</a>
+          <form th:action="@{/bookings/delete/{id}(id=${booking.bookingId})}" method="post" style="display:inline;margin-left:auto" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}" onsubmit="return confirm('Delete this booking?')">
+            <button type="submit" class="btn btn-danger">Delete Booking</button>
+          </form>
+        </div>
+      </form>
+    </div>
+
+    <!-- Booking not found -->
+            <div th:unless="${booking != null}" style="text-align:center;padding:4rem;color:var(--muted);">
+              <div style="font-size:3rem;margin-bottom:1rem;opacity:0.3;">📋</div>
+              <p>Booking not found.</p>
+              <a href="/bookings" class="btn btn-outline" style="margin-top:1rem;">Back to Bookings</a>
+            </div>
+
+        </div>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="/dashboard">Dashboard</a><a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a>
+    <a href="/payments">Payments</a><a href="/reviews">Reviews</a><a href="/logout">Logout</a>
   </div>
-</div></main><footer><div class="copyright">&copy; 2026 Ceylon Rides · Rooted in Ceylon, Driven by Passion · ALL RIGHTS RESERVED.</div></footer></body></html>
+  <div class="copyright">&copy; 2026 Ceylon Rides · Rooted in Ceylon, Driven by Passion · ALL RIGHTS RESERVED.</div>
+</footer>
+</body></html>

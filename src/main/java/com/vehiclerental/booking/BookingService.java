@@ -17,18 +17,12 @@ public class BookingService {
     @Autowired private BookingRepository bookingRepository;
     @Autowired private VehicleService vehicleService;
 
-    /**
-     * Loads all bookings via LinkedList — DSA requirement: manage rented vehicle records.
-     * The LinkedList traversal satisfies the DSA constraint; toList() returns a standard List
-     * for the rest of the application to use.
-     */
     public List<Booking> getAllBookings() {
         LinkedList<Booking> linkedList = new LinkedList<>();
         for (Booking b : bookingRepository.readAll()) linkedList.addLast(b);
         return linkedList.toList();
     }
 
-    /** Returns only Active (rented) bookings — DSA LinkedList traversal. */
     public List<Booking> getRentedBookings() {
         LinkedList<Booking> rentedList = new LinkedList<>();
         for (Booking b : bookingRepository.readAll())
@@ -52,7 +46,6 @@ public class BookingService {
                         }
                     } catch (Exception ignored) {}
                 }
-
                 if (userName != null && !userName.isEmpty()) b.setUserName(userName);
                 if (vehicleName != null && !vehicleName.isEmpty()) b.setVehicleName(vehicleName);
                 if (status != null && !status.isEmpty()) b.setStatus(status);
@@ -73,7 +66,6 @@ public class BookingService {
         long days = ChronoUnit.DAYS.between(LocalDate.parse(startDate), LocalDate.parse(endDate));
         if (days <= 0) return null;
 
-        // Guard against duplicate active bookings for the same vehicle
         boolean alreadyBooked = getAllBookings().stream()
                 .anyMatch(b -> b.getVehicleId().equals(vehicleId) && "Active".equals(b.getStatus()));
         if (alreadyBooked) return null;
@@ -120,11 +112,10 @@ public class BookingService {
         boolean found = false;
         for (Booking b : bookings) {
             if (b.getBookingId().equals(bookingId)) {
-                // Only cancel if not already cancelled/completed
                 if ("Cancelled".equals(b.getStatus()) || "Completed".equals(b.getStatus())) break;
                 b.setStatus("Cancelled"); found = true;
                 Vehicle v = vehicleService.findById(b.getVehicleId());
-                if (v != null && "Rented".equals(v.getAvailability())) {
+                if (v != null && !"Available".equals(v.getAvailability())) {
                     v.setAvailability("Available"); vehicleService.updateVehicle(v);
                 }
                 break;
@@ -139,11 +130,10 @@ public class BookingService {
         boolean found = false;
         for (Booking b : bookings) {
             if (b.getBookingId().equals(bookingId)) {
-                // Only complete if Active or Confirmed
                 if ("Cancelled".equals(b.getStatus()) || "Completed".equals(b.getStatus())) break;
                 b.setStatus("Completed"); found = true;
                 Vehicle v = vehicleService.findById(b.getVehicleId());
-                if (v != null && "Rented".equals(v.getAvailability())) {
+                if (v != null && !"Available".equals(v.getAvailability())) {
                     v.setAvailability("Available"); vehicleService.updateVehicle(v);
                 }
                 break;

@@ -1,4 +1,8 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
   <title>Bookings | Ceylon Rides</title>
   <style>
@@ -13,8 +17,8 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
     a { color: inherit; text-decoration: none; }
-    p { color: var(--muted); margin-bottom: 1rem; }
-    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: linear-gradient(var(--gold), var(--spice)); border-radius: 3px; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(var(--gold), var(--spice)); border-radius: 3px; }
 
     .header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(8,6,4,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border2); }
     .header-inner { display: flex; justify-content: space-between; align-items: center; height: 68px; padding: 0 2rem; max-width: 1280px; margin: 0 auto; position: relative; }
@@ -29,7 +33,7 @@
     .user-av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--spice)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.72rem; color: #fff; }
     .user-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
     .user-role { font-size: 0.58rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; display: block; }
-    .btn-logout { font-size: 0.72rem; color: var(--danger); background: none; border: 1px solid rgba(192,57,43,0.4); border-radius: 2rem; padding: 4px 12px; cursor: pointer; }
+    .btn-logout { font-size: 0.72rem; color: var(--danger); background: none; border: 1px solid rgba(192,57,43,0.4); border-radius: 2rem; padding: 4px 12px; cursor: pointer; text-decoration: none; }
 
     .main { padding-top: 90px; min-height: 100vh; }
     .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
@@ -65,8 +69,8 @@
     td { padding: 0.9rem 1.25rem; color: var(--text); border-bottom: 1px solid var(--border); }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(200,150,62,0.04); }
-    td.muted { color: var(--muted); font-size: 0.75rem; }
-    td.primary { color: var(--gold-light); font-weight: 600; }
+    .muted { color: var(--muted); font-size: 0.75rem; }
+    .primary { color: var(--gold-light); font-weight: 600; }
     .empty-td { text-align: center; color: var(--muted); padding: 3rem !important; font-family: 'Cormorant Garamond', serif; }
 
     .pill { display: inline-block; padding: 3px 12px; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; }
@@ -81,92 +85,141 @@
   </style>
 </head>
 <body>
-<header class="header"><div class="header-inner">
-  <a href="/dashboard" class="brand"><span class="brand-name">Ceylon Rides</span><span class="brand-sub">Journey of Ceylon</span></a>
-  <nav class="header-nav">
-    <a href="/vehicles">Fleet</a><a href="/bookings">Bookings</a><a href="/payments">Payments</a><a href="/reviews">Reviews</a>
-    <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
-    <a href="/admins" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
-  </nav>
-  <div style="display:flex;align-items:center;gap:0.75rem;">
-    <div class="user-pill">
-      <div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
-      <div><span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">G</span><span class="user-role" th:text="${user != null} ? ${user.role} : ''">R</span></div>
-    </div>
-    <a href="/logout" class="btn-logout">Logout</a>
-  </div>
-</div></header>
 
-<main class="main"><div class="container">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title" th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'All Bookings' : 'My Bookings'">Bookings</h1>
-      <p class="page-sub" th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'Manage all vehicle bookings' : 'Your vehicle reservation history'">Bookings</p>
+<header class="header">
+  <div class="header-inner">
+    <a href="/dashboard" class="brand">
+      <span class="brand-name">Ceylon Rides</span>
+      <span class="brand-sub">Journey of Ceylon</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/vehicles">Fleet</a>
+      <a href="/bookings">Bookings</a>
+      <a href="/payments">Payments</a>
+      <a href="/reviews">Reviews</a>
+      <a href="/users" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
+      <a href="/admins" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div class="user-pill">
+        <div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
+        <div>
+          <span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">Guest</span>
+          <span class="user-role" th:text="${user != null} ? ${user.role} : ''">Role</span>
+        </div>
+      </div>
+      <a href="/logout" class="btn-logout">Logout</a>
     </div>
-    <a href="/bookings/add" class="btn btn-primary">+ New Booking</a>
   </div>
+</header>
 
-  <div class="panel">
-    <div class="panel-hdr">
-      <h3 th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'All Bookings' : 'My Bookings'">Bookings</h3>
-      <a href="/bookings/sort/date" class="panel-link">Sort by date →</a>
+<main class="main">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title" th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'All Bookings' : 'My Bookings'">Bookings</h1>
+        <p class="page-sub" th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'Manage all vehicle bookings' : 'Your vehicle reservation history'">Bookings</p>
+      </div>
+      <a href="/bookings/add" class="btn btn-primary">+ New Booking</a>
     </div>
-    <div class="filters" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
-      <div class="search-box"><span style="color:#888;">&#128269;</span><input type="text" id="srch" placeholder="Search customer or vehicle..." oninput="filterTable()"></div>
-      <select class="filter-select" id="sf" onchange="filterTable()"><option value="">All Status</option><option>Active</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option></select>
+
+    <div class="panel">
+      <div class="panel-hdr">
+        <h3 th:text="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')} ? 'All Bookings' : 'My Bookings'">Bookings</h3>
+        <a href="/bookings/sort/date" class="panel-link">Sort by date →</a>
+      </div>
+
+      <div class="filters" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
+        <div class="search-box">
+          <span style="color:#888;">&#128269;</span>
+          <input type="text" id="srch" placeholder="Search customer or vehicle..." oninput="filterTable()">
+        </div>
+        <select class="filter-select" id="sf" onchange="filterTable()">
+          <option value="">All Status</option>
+          <option>Active</option>
+          <option>Confirmed</option>
+          <option>Completed</option>
+          <option>Cancelled</option>
+        </select>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table id="bTable">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Customer</th>
+            <th>Vehicle</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Actions</th>
+            <th th:if="${user != null and user.role == 'USER'}">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="b : ${bookings}">
+            <td class="muted" th:text="${b.bookingId}">-</td>
+            <td th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}" th:text="${b.userName}">-</td>
+            <td th:text="${b.vehicleName}">-</td>
+            <td class="muted" th:text="${b.startDate}">-</td>
+            <td class="muted" th:text="${b.endDate}">-</td>
+            <td class="primary" th:text="'Rs. ' + ${b.totalPrice}">-</td>
+            <td>
+              <span class="pill" th:classappend="'pill-' + ${b.status}" th:text="${b.status}">-</span>
+            </td>
+            <td th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
+              <form th:action="@{/bookings/confirm/{id}(id=${b.bookingId})}" method="post" style="display:inline" th:if="${b.status == 'Active'}">
+                <button type="submit" class="btn btn-outline btn-sm">Confirm</button>
+              </form>
+              <a th:href="@{/bookings/edit/{id}(id=${b.bookingId})}" class="btn btn-outline btn-sm">Edit</a>
+              <form th:action="@{/bookings/cancel/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Cancel booking?')">
+                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+              </form>
+              <form th:action="@{/bookings/delete/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Delete booking?')">
+                <button type="submit" class="btn btn-danger btn-sm">Del</button>
+              </form>
+            </td>
+            <td th:if="${user != null and user.role == 'USER'}">
+              <a th:if="${(paidBookingIds == null or !paidBookingIds.contains(b.bookingId)) and (b.status == 'Active' or b.status == 'Confirmed')}"
+                 th:href="@{/payments/add(bookingId=${b.bookingId})}" class="btn btn-primary btn-sm">Pay Now</a>
+              <span th:if="${paidBookingIds != null and paidBookingIds.contains(b.bookingId)}" class="pill pill-Confirmed">Paid</span>
+              <form th:if="${b.status == 'Active' or b.status == 'Confirmed'}"
+                    th:action="@{/bookings/cancel/{id}(id=${b.bookingId})}" method="post"
+                    style="display:inline" onsubmit="return confirm('Cancel this booking?')">
+                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+              </form>
+            </td>
+          </tr>
+          <tr th:if="${bookings == null or #lists.isEmpty(bookings)}">
+            <td colspan="9" class="empty-td">No bookings yet. <a href="/bookings/add" style="color:#c8963e;">Create one →</a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div style="overflow-x:auto;">
-      <table id="bTable">
-        <thead><tr>
-          <th>ID</th>
-          <th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Customer</th>
-          <th>Vehicle</th><th>Start</th><th>End</th><th>Total</th><th>Status</th>
-          <th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Actions</th>
-          <th th:if="${user != null and user.role == 'USER'}">Actions</th>
-        </tr></thead>
-        <tbody>
-        <tr th:each="b : ${bookings}">
-          <td class="muted" th:text="${b.bookingId}">-</td>
-          <td th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}" th:text="${b.userName}">-</td>
-          <td th:text="${b.vehicleName}">-</td>
-          <td class="muted" th:text="${b.startDate}">-</td>
-          <td class="muted" th:text="${b.endDate}">-</td>
-          <td class="primary" th:text="'Rs. ' + ${b.totalPrice}">-</td>
-          <td><span class="pill" th:classappend="'pill-' + ${b.status}" th:text="${b.status}">-</span></td>
-          <td th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
-            <form th:action="@{/bookings/confirm/{id}(id=${b.bookingId})}" method="post" style="display:inline" th:if="${b.status == 'Active'}"><button type="submit" class="btn btn-outline btn-sm">Confirm</button></form>
-            <a th:href="@{/bookings/edit/{id}(id=${b.bookingId})}" class="btn btn-outline btn-sm">Edit</a>
-            <form th:action="@{/bookings/cancel/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Cancel booking?')"><button type="submit" class="btn btn-danger btn-sm">Cancel</button></form>
-            <form th:action="@{/bookings/delete/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Delete booking?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form>
-          </td>
-          <td th:if="${user != null and user.role == 'USER'}">
-            <a th:if="${(paidBookingIds == null or !paidBookingIds.contains(b.bookingId)) and (b.status == 'Active' or b.status == 'Confirmed')}" th:href="@{/payments/add(bookingId=${b.bookingId})}" class="btn btn-primary btn-sm">Pay Now</a>
-            <span th:if="${paidBookingIds != null and paidBookingIds.contains(b.bookingId)}" class="pill pill-Confirmed">Paid</span>
-            <form th:if="${b.status == 'Active' or b.status == 'Confirmed'}" th:action="@{/bookings/cancel/{id}(id=${b.bookingId})}" method="post" style="display:inline" onsubmit="return confirm('Cancel this booking?')">
-              <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-            </form>
-          </td>
-        </tr>
-        <tr th:if="${bookings == null or #lists.isEmpty(bookings)}"><td colspan="8" class="empty-td">No bookings yet. <a href="/bookings/add" style="color:#c8963e;">Create one →</a></td></tr>
-        </tbody>
-      </table>
-    </div>
+
+    <script>
+      function filterTable() {
+        const s = document.getElementById('srch').value.toLowerCase();
+        const f = document.getElementById('sf').value;
+        document.querySelectorAll('#bTable tbody tr').forEach(r => {
+          if (!r.cells[1]) return;
+          const name = (r.cells[1].textContent + r.cells[2].textContent).toLowerCase();
+          const st = (r.cells[6] ? r.cells[6].textContent : '').trim();
+          r.style.display = ((!s || name.includes(s)) && (!f || st === f)) ? '' : 'none';
+        });
+      }
+    </script>
+
   </div>
-  <script>
-    function filterTable(){
-      const s=document.getElementById('srch').value.toLowerCase();
-      const f=document.getElementById('sf').value;
-      document.querySelectorAll('#bTable tbody tr').forEach(r=>{
-        if(!r.cells[1]) return;
-        const name=(r.cells[1].textContent+r.cells[2].textContent).toLowerCase();
-        const st=(r.cells[6].textContent||'').trim();
-        r.style.display=((!s||name.includes(s))&&(!f||st===f))?'':'none';
-      });
-    }
-  </script>
-</div></main>
+</main>
 
 <footer>
   <div class="copyright">&copy; 2026 Ceylon Rides &middot; Rooted in Ceylon, Driven by Passion &middot; All Rights Reserved.</div>
 </footer>
-</body></html>
+
+</body>
+</html>
