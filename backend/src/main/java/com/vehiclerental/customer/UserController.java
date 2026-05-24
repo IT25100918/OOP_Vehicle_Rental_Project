@@ -138,7 +138,7 @@ public class UserController {
         long maintenanceVehicles = vehicles.stream().filter(v -> "Maintenance".equals(v.getAvailability())).count();
 
         long activeBookings = dashboardBookings.stream().filter(b -> "Active".equals(b.getStatus())).count();
-        double totalRevenue = allPayments.stream().mapToDouble(Payment::getAmount).sum();
+        double totalRevenue = dashboardPayments.stream().mapToDouble(Payment::getAmount).sum();
 
         int availPct = totalVehicles > 0 ? (int) Math.round(availableVehicles * 100.0 / totalVehicles) : 0;
         int rentPct  = totalVehicles > 0 ? (int) Math.round(rentedVehicles * 100.0 / totalVehicles) : 0;
@@ -383,15 +383,6 @@ public class UserController {
             @PathVariable String reviewId, HttpSession session) {
         if (!isAdmin(session)) return ResponseEntity.status(403).build();
         reviewService.approveReview(reviewId);
-        return ResponseEntity.ok(Map.of("success", true));
-    }
-
-    @DeleteMapping("/api/admin/reviews/delete/{reviewId}")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> apiDeleteReview(
-            @PathVariable String reviewId, HttpSession session) {
-        if (!isAdmin(session)) return ResponseEntity.status(403).build();
-        reviewService.deleteReview(reviewId);
         return ResponseEntity.ok(Map.of("success", true));
     }
 
