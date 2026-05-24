@@ -291,7 +291,7 @@
 <main class="main"><div class="container">
   <div class="page-header"><div><h1 class="page-title">Edit Vehicle</h1><p class="page-sub" th:text="${vehicle != null} ? ${vehicle.brand + ' ' + vehicle.model} : ''">Vehicle</p></div><a href="/vehicles" class="btn btn-outline">&larr; Back</a></div>
   <div class="form-card">
-    <form th:action="@{/vehicles/update}" method="post" th:if="${vehicle != null}" enctype="multipart/form-data">
+    <form th:action="@{/vehicles/update}" method="post" th:if="${vehicle != null}">
       <input type="hidden" name="vehicleId" th:value="${vehicle.vehicleId}">
       <div class="form-row">
         <div class="form-group"><label class="form-label">Brand <span>*</span></label><input type="text" name="brand" class="form-input" th:value="${vehicle.brand}" required></div>
