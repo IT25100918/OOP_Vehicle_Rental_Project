@@ -1,4 +1,4 @@
-package com.vehiclerental.servlet;
+package com.vehiclerental.payment;
 
 import com.vehiclerental.booking.Booking;
 import com.vehiclerental.booking.BookingService;
@@ -18,31 +18,6 @@ public class PaymentController {
     @Autowired private BookingService bookingService;
     @Autowired private VehicleService vehicleService;
 
-    @GetMapping("/payments/edit/{paymentId}")
-    public String showEditPayment(@PathVariable String paymentId, Model model, HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        model.addAttribute("user", loggedIn);
-        model.addAttribute("payment", paymentService.findById(paymentId));
-        return "payment/edit-payment";
-    }
-
-    @PostMapping("/payments/update")
-    public String updatePayment(
-            @RequestParam String paymentId,
-            @RequestParam String paymentMethod,
-            @RequestParam String status,
-            HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        paymentService.updatePayment(paymentId, paymentMethod, status);
-        return "redirect:/payments";
-    }
-
     @GetMapping("/payments")
     public String listPayments(Model model, HttpSession session) {
         User loggedIn = (User) session.getAttribute("loggedInUser");
@@ -51,7 +26,6 @@ public class PaymentController {
         if ("ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole())) {
             model.addAttribute("payments", paymentService.getAllPayments());
         } else {
-            // User sees only their own payments
             model.addAttribute("payments", paymentService.getAllPayments().stream()
                     .filter(p -> loggedIn.getUserId().equals(p.getUserId()))
                     .collect(java.util.stream.Collectors.toList()));
@@ -71,7 +45,6 @@ public class PaymentController {
             Booking b = bookingService.findById(bookingId);
             if (b != null) {
                 model.addAttribute("selectedBooking", b);
-                // Pass vehicle so image shows on payment page
                 Vehicle v = vehicleService.findById(b.getVehicleId());
                 if (v != null) model.addAttribute("selectedVehicle", v);
             }
@@ -79,9 +52,12 @@ public class PaymentController {
         return "payment/add-payment";
     }
 
+    // FIXED: accepts calculated amount (with VAT) from the form
     @PostMapping("/payments/add")
     public String addPayment(
-            @RequestParam String bookingId, @RequestParam String paymentMethod,
+            @RequestParam String bookingId,
+            @RequestParam String paymentMethod,
+            @RequestParam(required = false) Double amount,
             Model model, HttpSession session) {
         Booking booking = bookingService.findById(bookingId);
         if (booking == null) {
@@ -96,9 +72,11 @@ public class PaymentController {
             model.addAttribute("bookings", bookingService.getAllBookings());
             return "payment/add-payment";
         }
+        // Use VAT-calculated amount from form if available, otherwise fall back to booking price
+        double finalAmount = (amount != null && amount > 0) ? amount : booking.getTotalPrice();
         boolean success = paymentService.addPayment(bookingId, booking.getUserId(),
                 booking.getUserName(), booking.getVehicleName(),
-                booking.getTotalPrice(), paymentMethod);
+                finalAmount, paymentMethod);
         if (success) return "redirect:/payments";
         model.addAttribute("user", session.getAttribute("loggedInUser"));
         model.addAttribute("error", "Payment failed!");
@@ -106,10 +84,46 @@ public class PaymentController {
         return "payment/add-payment";
     }
 
+    @GetMapping("/payments/edit/{paymentId}")
+    public String showEditPayment(@PathVariable String paymentId, Model model, HttpSession session) {
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
+            return "redirect:/payments";
+        model.addAttribute("user", loggedIn);
+        model.addAttribute("payment", paymentService.findById(paymentId));
+        return "payment/edit-payment";
+    }
+
+    // FIXED: now passes amount and paymentDate to service
+    @PostMapping("/payments/update")
+    public String updatePayment(
+            @RequestParam String paymentId,
+            @RequestParam String paymentMethod,
+            @RequestParam String status,
+            @RequestParam double amount,
+            @RequestParam(required = false) String paymentDate,
+            HttpSession session) {
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
+            return "redirect:/payments";
+        paymentService.updatePayment(paymentId, paymentMethod, status, amount, paymentDate);
+        return "redirect:/payments";
+    }
+
     @GetMapping("/payments/sort/amount")
     public String sortByAmount(Model model, HttpSession session) {
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("payments", paymentService.getPaymentsSortedByAmount());
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        model.addAttribute("user", loggedIn);
+        if ("ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole())) {
+            model.addAttribute("payments", paymentService.getPaymentsSortedByAmount());
+        } else {
+            model.addAttribute("payments", paymentService.getPaymentsSortedByAmount().stream()
+                    .filter(p -> loggedIn.getUserId().equals(p.getUserId()))
+                    .collect(java.util.stream.Collectors.toList()));
+        }
         return "payment/index";
     }
 
