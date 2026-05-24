@@ -55,10 +55,52 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
+            <!-- Templates from all feature modules -->
+            <resource>
+                <directory>../User management/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../Admin Management/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../Booking Management/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../Payment Management/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../Review Management/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../vehicle management/src/main/resources</directory>
+            </resource>
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>../User management/src/main/java</source>
+                                <source>../Admin Management/src/main/java</source>
+                                <source>../Booking Management/src/main/java</source>
+                                <source>../Payment Management/src/main/java</source>
+                                <source>../Review Management/src/main/java</source>
+                                <source>../vehicle management/src/main/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.vehiclerental.VehicleRentalApplication</mainClass>
