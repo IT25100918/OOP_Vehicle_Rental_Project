@@ -12,7 +12,6 @@ public class AdminController {
 
     @Autowired private AdminService adminService;
 
-    /** Safely extract the role from whatever object is in session (User or Admin). */
     private String sessionRole(HttpSession session) {
         Object loggedIn = session.getAttribute("loggedInUser");
         if (loggedIn instanceof com.vehiclerental.customer.User u) return u.getRole();
@@ -69,10 +68,12 @@ public class AdminController {
     @PostMapping("/admins/update")
     public String updateAdmin(
             @RequestParam String adminId, @RequestParam String fullName,
-            @RequestParam String phoneNumber, @RequestParam String role) {
+            @RequestParam String phoneNumber, @RequestParam String role,
+            @RequestParam(required = false, defaultValue = "Active") String status) {
         Admin admin = adminService.findById(adminId);
         if (admin == null) return "redirect:/admins";
-        admin.setFullName(fullName); admin.setPhoneNumber(phoneNumber); admin.setRole(role);
+        admin.setFullName(fullName); admin.setPhoneNumber(phoneNumber);
+        admin.setRole(role); admin.setStatus(status);
         adminService.updateAdmin(admin);
         return "redirect:/admins";
     }
@@ -97,7 +98,6 @@ public class AdminController {
         return "admin/edit-admin";
     }
 
-    // Changed to POST to prevent CSRF via GET
     @PostMapping("/admins/toggle/{adminId}")
     public String toggleStatus(@PathVariable String adminId, HttpSession session) {
         if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
@@ -107,7 +107,6 @@ public class AdminController {
         return "redirect:/admins";
     }
 
-    // Changed to POST to prevent CSRF via GET
     @PostMapping("/admins/delete/{adminId}")
     public String deleteAdmin(@PathVariable String adminId, HttpSession session) {
         if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
@@ -119,7 +118,11 @@ public class AdminController {
 
     @GetMapping("/admins/sort/role")
     public String sortByRole(Model model, HttpSession session) {
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
+        Object loggedIn = session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        String role = sessionRole(session);
+        if (!"ADMIN".equals(role) && !"SUPER_ADMIN".equals(role)) return "redirect:/dashboard";
+        model.addAttribute("user", loggedIn);
         model.addAttribute("admins", adminService.getAdminsSortedByRole());
         return "admin/index";
     }
