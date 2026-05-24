@@ -1,11 +1,10 @@
-package com.vehiclerental.service;
+package com.vehiclerental.payment;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PaymentService {
@@ -18,8 +17,10 @@ public class PaymentService {
 
     public boolean addPayment(String bookingId, String userId, String userName,
                                String vehicleName, double amount, String paymentMethod) {
-        Payment payment = new Payment("P" + java.util.UUID.randomUUID().toString().replace("-","").substring(0,12), bookingId, userId,
-                userName, vehicleName, amount, LocalDate.now().toString(), paymentMethod, "Paid");
+        Payment payment = new Payment(
+                "P" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 12),
+                bookingId, userId, userName, vehicleName,
+                amount, LocalDate.now().toString(), paymentMethod, "Paid");
         return paymentRepository.append(payment);
     }
 
@@ -45,13 +46,18 @@ public class PaymentService {
         return payments;
     }
 
-    public boolean updatePayment(String paymentId, String paymentMethod, String status) {
+    // FIXED: now updates amount and paymentDate as well
+    public boolean updatePayment(String paymentId, String paymentMethod, String status,
+                                  double amount, String paymentDate) {
         List<Payment> payments = getAllPayments();
         boolean found = false;
         for (Payment p : payments)
             if (p.getPaymentId().equals(paymentId)) {
                 p.setPaymentMethod(paymentMethod);
                 p.setStatus(status);
+                p.setAmount(amount);
+                if (paymentDate != null && !paymentDate.isEmpty())
+                    p.setPaymentDate(paymentDate);
                 found = true; break;
             }
         if (found) paymentRepository.saveAll(payments);
