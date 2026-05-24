@@ -300,7 +300,8 @@
     </div>
     <div style="overflow-x:auto;">
       <table id="rTable">
-        <thead><tr><th>ID</th><th>Customer</th><th>Vehicle</th><th>Rating</th><th>Comment</th><th>Date</th><th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Actions</th></tr></thead>
+        <thead><tr><th>ID</th><th>Customer</th><th>Vehicle</th><th>Rating</th><th>Comment</th><th>Date</th><th th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Actions</th>
+          <th th:if="${user != null and user.role == 'USER'}">Actions</th></tr></thead>
         <tbody>
         <tr th:each="r : ${reviews}">
           <td class="muted" th:text="${r.reviewId}">-</td>
@@ -312,6 +313,10 @@
           <td th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">
             <a th:href="@{/reviews/edit/{id}(id=${r.reviewId})}" class="btn btn-outline btn-sm">Edit</a>
             <form th:action="@{/reviews/delete/{id}(id=${r.reviewId})}" method="post" style="display:inline" onsubmit="return confirm('Delete review?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form>
+          </td>
+          <td th:if="${user != null and user.role == 'USER'}">
+            <a th:if="${r.userId == user.userId}" th:href="@{/reviews/edit/{id}(id=${r.reviewId})}" class="btn btn-outline btn-sm">Edit</a>
+            <form th:if="${r.userId == user.userId}" th:action="@{/reviews/delete/{id}(id=${r.reviewId})}" method="post" style="display:inline" onsubmit="return confirm('Delete your review?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form>
           </td>
         </tr>
         <tr th:if="${reviews == null or #lists.isEmpty(reviews)}"><td colspan="7" class="empty-td">No reviews yet.</td></tr>
