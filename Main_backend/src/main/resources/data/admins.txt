@@ -1,2 +1,0 @@
-A1000000000,Admin User,admin@primevehiclerentals.com,$2b$10$wR1fmc7oJ9EHrC4cG4yB1e/Q4gzIA3UzTRvsb9VG4qpvekEcBjxCO,0771234567,SUPER_ADMIN,Active
-A001,Admin,admin@admin.com,$2b$10$AF9Yaghg/n6JOQ1.apptYOyweJzaoveR/vk4RS5aV/4dYwn2cnNK2,0771234567,ADMIN,Active
