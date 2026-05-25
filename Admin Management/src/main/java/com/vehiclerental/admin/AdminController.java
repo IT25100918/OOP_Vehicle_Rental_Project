@@ -68,12 +68,24 @@ public class AdminController {
     @PostMapping("/admins/update")
     public String updateAdmin(
             @RequestParam String adminId, @RequestParam String fullName,
-            @RequestParam String phoneNumber, @RequestParam String role,
-            @RequestParam(required = false, defaultValue = "Active") String status) {
+            @RequestParam String email, @RequestParam String phoneNumber,
+            @RequestParam String role,
+            @RequestParam(required = false, defaultValue = "Active") String status,
+            Model model, HttpSession session) {
         Admin admin = adminService.findById(adminId);
         if (admin == null) return "redirect:/admins";
-        admin.setFullName(fullName); admin.setPhoneNumber(phoneNumber);
-        admin.setRole(role); admin.setStatus(status);
+        // Check email uniqueness if it changed
+        if (!admin.getEmail().equalsIgnoreCase(email.trim())) {
+            Admin existing = adminService.findByEmail(email.trim());
+            if (existing != null && !existing.getAdminId().equals(adminId)) {
+                model.addAttribute("user", session.getAttribute("loggedInUser"));
+                model.addAttribute("admin", admin);
+                model.addAttribute("error", "Email already in use by another admin.");
+                return "admin/edit-admin";
+            }
+        }
+        admin.setFullName(fullName); admin.setEmail(email.trim());
+        admin.setPhoneNumber(phoneNumber); admin.setRole(role); admin.setStatus(status);
         adminService.updateAdmin(admin);
         return "redirect:/admins";
     }
@@ -116,6 +128,7 @@ public class AdminController {
         return "redirect:/admins";
     }
 
+    // FIXED: added auth + role guard
     @GetMapping("/admins/sort/role")
     public String sortByRole(Model model, HttpSession session) {
         Object loggedIn = session.getAttribute("loggedInUser");
