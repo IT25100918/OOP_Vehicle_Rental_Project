@@ -17,7 +17,7 @@
     <artifactId>vehicle-rental</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>Prime Vehicle Rentals</name>
+    <name>Ceylon Rides</name>
     <description>Vehicle Rental Management System</description>
 
     <properties>
@@ -101,7 +101,9 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.0</version>
                 <configuration>
                     <mainClass>com.vehiclerental.VehicleRentalApplication</mainClass>
                     <excludes>
