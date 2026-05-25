@@ -1,6 +1,8 @@
 package com.vehiclerental.vehicle;
 
+import com.vehiclerental.booking.BookingService;
 import com.vehiclerental.customer.User;
+import com.vehiclerental.vehicle.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +20,11 @@ public class VehicleController {
     @Autowired
     private VehicleService vehicleService;
 
+    @Autowired
+    private BookingService bookingService;
+
     @GetMapping("/vehicles")
     public String listVehicles(Model model, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
         model.addAttribute("user", session.getAttribute("loggedInUser"));
         model.addAttribute("vehicles", vehicleService.getAllVehicles());
         return "vehicle/index";
@@ -126,6 +130,12 @@ public class VehicleController {
         if (loggedIn == null) return "redirect:/login";
         String role = loggedIn.getRole();
         if (!"ADMIN".equals(role) && !"SUPER_ADMIN".equals(role)) return "redirect:/vehicles";
+        // Cancel any active/confirmed bookings tied to this vehicle before deleting
+        bookingService.getAllBookings().stream()
+                .filter(b -> b.getVehicleId().equals(vehicleId)
+                        && !"Cancelled".equals(b.getStatus())
+                        && !"Completed".equals(b.getStatus()))
+                .forEach(b -> bookingService.cancelBooking(b.getBookingId()));
         vehicleService.deleteVehicle(vehicleId);
         return "redirect:/vehicles";
     }
