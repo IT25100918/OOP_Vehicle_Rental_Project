@@ -138,7 +138,7 @@ public class UserController {
         long maintenanceVehicles = vehicles.stream().filter(v -> "Maintenance".equals(v.getAvailability())).count();
 
         long activeBookings = dashboardBookings.stream().filter(b -> "Active".equals(b.getStatus())).count();
-        double totalRevenue = dashboardPayments.stream().mapToDouble(Payment::getAmount).sum();
+        double totalRevenue = allPayments.stream().mapToDouble(Payment::getAmount).sum();
 
         int availPct = totalVehicles > 0 ? (int) Math.round(availableVehicles * 100.0 / totalVehicles) : 0;
         int rentPct  = totalVehicles > 0 ? (int) Math.round(rentedVehicles * 100.0 / totalVehicles) : 0;
@@ -174,7 +174,21 @@ public class UserController {
         model.addAttribute("totalBookings",      isAdmin ? allBookings.size() : userBookings.size());
         model.addAttribute("totalPayments",      isAdmin ? allPayments.size() : userPayments.size());
 
+        // Profile section extras (user-facing)
+        double totalSpent = userPayments.stream().mapToDouble(Payment::getAmount).sum();
+        long userReviewCount = reviews.stream().filter(r -> uid.equals(r.getUserId())).count();
+        model.addAttribute("totalSpent",         totalSpent);
+        model.addAttribute("totalReviews",       userReviewCount);
+
         return "dashboard";
+    }
+
+    // ─── Profile ─────────────────────────────────────────────────────────────
+
+    @GetMapping("/profile")
+    public String viewProfile(HttpSession session) {
+        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
+        return "redirect:/dashboard#profile";
     }
 
     // ─── Users CRUD ──────────────────────────────────────────────────────────
@@ -193,7 +207,12 @@ public class UserController {
 
     @GetMapping("/users/edit/{userId}")
     public String showEditPage(@PathVariable String userId, Model model, HttpSession session) {
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        boolean isAdmin = "ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole());
+        // Regular users can only edit their own profile
+        if (!isAdmin && !loggedIn.getUserId().equals(userId)) return "redirect:/dashboard";
+        model.addAttribute("user", loggedIn);
         model.addAttribute("editUser", userService.findById(userId));
         return "customer/edit-users";
     }
@@ -209,6 +228,12 @@ public class UserController {
             @RequestParam(required = false) String newPassword,
             HttpSession session,
             Model model) {
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        boolean isAdmin = "ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole());
+        // Regular users can only update their own profile
+        if (!isAdmin && !loggedIn.getUserId().equals(userId)) return "redirect:/dashboard";
+
         User user = userService.findById(userId);
         if (user != null) {
             user.setFullName(fullName);
@@ -220,7 +245,7 @@ public class UserController {
             if (newPassword != null && !newPassword.trim().isEmpty()) {
                 boolean changed = userService.changePassword(userId, currentPassword, newPassword.trim());
                 if (!changed) {
-                    model.addAttribute("user", session.getAttribute("loggedInUser"));
+                    model.addAttribute("user", loggedIn);
                     model.addAttribute("editUser", user);
                     model.addAttribute("pwError", "Current password is incorrect.");
                     return "customer/edit-users";
@@ -232,14 +257,10 @@ public class UserController {
             }
 
             // Keep session in sync if the user edited their own profile
-            User loggedIn = (User) session.getAttribute("loggedInUser");
-            if (loggedIn != null && loggedIn.getUserId().equals(userId)) {
+            if (loggedIn.getUserId().equals(userId)) {
                 session.setAttribute("loggedInUser", user);
             }
         }
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        boolean isAdmin = loggedIn != null &&
-                ("ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole()));
         return isAdmin ? "redirect:/users" : "redirect:/dashboard";
     }
 
@@ -383,6 +404,15 @@ public class UserController {
             @PathVariable String reviewId, HttpSession session) {
         if (!isAdmin(session)) return ResponseEntity.status(403).build();
         reviewService.approveReview(reviewId);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @DeleteMapping("/api/admin/reviews/delete/{reviewId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiDeleteReview(
+            @PathVariable String reviewId, HttpSession session) {
+        if (!isAdmin(session)) return ResponseEntity.status(403).build();
+        reviewService.deleteReview(reviewId);
         return ResponseEntity.ok(Map.of("success", true));
     }
 
