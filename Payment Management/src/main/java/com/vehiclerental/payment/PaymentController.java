@@ -18,6 +18,31 @@ public class PaymentController {
     @Autowired private BookingService bookingService;
     @Autowired private VehicleService vehicleService;
 
+    @GetMapping("/payments/edit/{paymentId}")
+    public String showEditPayment(@PathVariable String paymentId, Model model, HttpSession session) {
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
+            return "redirect:/payments";
+        model.addAttribute("user", loggedIn);
+        model.addAttribute("payment", paymentService.findById(paymentId));
+        return "payment/edit-payment";
+    }
+
+    @PostMapping("/payments/update")
+    public String updatePayment(
+            @RequestParam String paymentId,
+            @RequestParam String paymentMethod,
+            @RequestParam String status,
+            HttpSession session) {
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
+            return "redirect:/payments";
+        paymentService.updatePayment(paymentId, paymentMethod, status);
+        return "redirect:/payments";
+    }
+
     @GetMapping("/payments")
     public String listPayments(Model model, HttpSession session) {
         User loggedIn = (User) session.getAttribute("loggedInUser");
@@ -54,63 +79,38 @@ public class PaymentController {
 
     @PostMapping("/payments/add")
     public String addPayment(
-            @RequestParam String bookingId,
-            @RequestParam String paymentMethod,
-            @RequestParam(required = false) Double amount,
+            @RequestParam String bookingId, @RequestParam String paymentMethod,
             Model model, HttpSession session) {
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
         Booking booking = bookingService.findById(bookingId);
         if (booking == null) {
-            model.addAttribute("user", session.getAttribute("loggedInUser"));
+            model.addAttribute("user", loggedIn);
             model.addAttribute("error", "Booking not found!");
             model.addAttribute("bookings", bookingService.getAllBookings());
             return "payment/add-payment";
         }
+        // Regular users can only pay for their own bookings
+        boolean isAdmin = "ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole());
+        if (!isAdmin && !loggedIn.getUserId().equals(booking.getUserId()))
+            return "redirect:/payments";
         if (paymentService.paymentExistsForBooking(bookingId)) {
-            model.addAttribute("user", session.getAttribute("loggedInUser"));
+            model.addAttribute("user", loggedIn);
             model.addAttribute("error", "A payment already exists for this booking!");
             model.addAttribute("bookings", bookingService.getAllBookings());
             return "payment/add-payment";
         }
-        // Use VAT-calculated amount from form if available, otherwise fall back to booking price
-        double finalAmount = (amount != null && amount > 0) ? amount : booking.getTotalPrice();
         boolean success = paymentService.addPayment(bookingId, booking.getUserId(),
                 booking.getUserName(), booking.getVehicleName(),
-                finalAmount, paymentMethod);
+                booking.getTotalPrice(), paymentMethod);
         if (success) return "redirect:/payments";
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
+        model.addAttribute("user", loggedIn);
         model.addAttribute("error", "Payment failed!");
         model.addAttribute("bookings", bookingService.getAllBookings());
         return "payment/add-payment";
     }
 
-    @GetMapping("/payments/edit/{paymentId}")
-    public String showEditPayment(@PathVariable String paymentId, Model model, HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        model.addAttribute("user", loggedIn);
-        model.addAttribute("payment", paymentService.findById(paymentId));
-        return "payment/edit-payment";
-    }
-
-    // FIXED: now accepts and saves amount and paymentDate
-    @PostMapping("/payments/update")
-    public String updatePayment(
-            @RequestParam String paymentId,
-            @RequestParam String paymentMethod,
-            @RequestParam String status,
-            @RequestParam double amount,
-            @RequestParam(required = false) String paymentDate,
-            HttpSession session) {
-        User loggedIn = (User) session.getAttribute("loggedInUser");
-        if (loggedIn == null) return "redirect:/login";
-        if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
-            return "redirect:/payments";
-        paymentService.updatePayment(paymentId, paymentMethod, status, amount, paymentDate);
-        return "redirect:/payments";
-    }
-
+    // FIXED: added auth + role-scoped data
     @GetMapping("/payments/sort/amount")
     public String sortByAmount(Model model, HttpSession session) {
         User loggedIn = (User) session.getAttribute("loggedInUser");
