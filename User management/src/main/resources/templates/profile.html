@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ceylon Rides | Profile</title>
+    <style>
+        :root { --gold: #c8963e; --gold-light: #f0c060; --dark: #0a0700; --card-bg: #13100a; --border: #2a2015; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--dark); color: #f0e6d3; }
+
+        /* HEADER */
+        .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1030; background: rgba(8,6,4,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(200,150,62,0.2); }
+        .header--inner { display: flex; justify-content: space-between; align-items: center; height: 70px; padding: 0 2rem; max-width: 1400px; margin: 0 auto; }
+        .header--brand { display: flex; align-items: center; gap: 2rem; }
+        .header--brand-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; background: linear-gradient(135deg,#c8963e,#f0c060,#c8963e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .header--fleet { color: #7a6a52; text-decoration: none; font-weight: 500; font-size: 0.85rem; transition: color 0.2s; }
+        .header--fleet:hover, .header--fleet.active { color: #f0c060; }
+        .profile-nav-wrap { position: relative; display: inline-block; }
+        .profile-nav-dropdown { display: none; position: absolute; top: calc(100% + 0.75rem); right: 0; min-width: 220px; background: #1a1409; border: 1px solid #3d3020; border-radius: 0.9rem; padding: 1rem; box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 999; }
+        .profile-nav-wrap:hover .profile-nav-dropdown { display: block; }
+        .user-pill { display: flex; align-items: center; gap: 0.6rem; background: rgba(28,23,16,0.9); border: 1px solid #3d3020; border-radius: 2rem; padding: 4px 14px 4px 5px; text-decoration: none; }
+        .user-av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#c8963e,#8b3a1a); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.72rem; color: #fff; }
+        .user-name { font-size: 0.8rem; font-weight: 600; color: #f0e6d3; display: block; }
+        .user-role { font-size: 0.58rem; color: #c8963e; text-transform: uppercase; letter-spacing: 0.06em; display: block; }
+        .logout-btn { background: transparent; border: 1px solid rgba(192,57,43,0.5); color: #e07060; padding: 0.35rem 1rem; border-radius: 2rem; text-decoration: none; font-size: 0.8rem; transition: all 0.2s; }
+        .logout-btn:hover { background: rgba(192,57,43,0.1); }
+
+        /* PAGE */
+        main { padding-top: 90px; padding-bottom: 3rem; max-width: 1100px; margin: 0 auto; padding-left: 1.5rem; padding-right: 1.5rem; }
+
+        .page-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; color: #f0c060; margin-bottom: 1.5rem; }
+
+        /* AVATAR CARD */
+        .avatar-card { display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; border-top: 2px solid var(--gold); margin-bottom: 1.5rem; }
+        .avatar-circle { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg,#c8963e,#8b3a1a); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; color: #fff; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(200,150,62,0.2); }
+        .avatar-info { flex: 1; }
+        .avatar-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #f0c060; }
+        .avatar-email { font-size: 0.82rem; color: #7a6a52; margin-top: 0.2rem; }
+        .avatar-badges { margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .badge-role { background: rgba(200,150,62,0.12); color: #f0c060; border: 1px solid rgba(200,150,62,0.3); padding: 2px 10px; border-radius: 2rem; font-size: 0.68rem; font-weight: 600; }
+        .badge-member { background: rgba(26,107,122,0.15); color: #5bc4d8; border: 1px solid rgba(26,107,122,0.3); padding: 2px 10px; border-radius: 2rem; font-size: 0.68rem; font-weight: 600; }
+        .badge-driver { background: rgba(45,90,61,0.15); color: #6ec98a; border: 1px solid rgba(45,90,61,0.3); padding: 2px 10px; border-radius: 2rem; font-size: 0.68rem; font-weight: 600; }
+        .edit-btn { background: linear-gradient(135deg,#c8963e,#8b3a1a); color: #fff; padding: 0.45rem 1rem; border-radius: 0.6rem; font-size: 0.78rem; font-weight: 600; text-decoration: none; flex-shrink: 0; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.9rem; padding: 1rem 1.2rem; }
+        .stat-label { font-size: 0.72rem; color: #7a6a52; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #f0c060; line-height: 1; }
+        .stat-value.rs { font-size: 1.4rem; }
+
+        /* INFO GRID */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } }
+        .info-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; border-top: 2px solid var(--gold); }
+        .info-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 700; color: #e8d5b0; margin-bottom: 1rem; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+        .info-row:last-child { border-bottom: none; }
+        .info-key { font-size: 0.72rem; color: #7a6a52; text-transform: uppercase; letter-spacing: 0.06em; }
+        .info-val { font-size: 0.88rem; color: #f0e6d3; }
+        .info-val.muted { font-size: 0.72rem; color: #7a6a52; }
+        .status-badge { background: rgba(45,90,61,0.2); color: #6ec98a; border: 1px solid rgba(45,90,61,0.3); padding: 2px 10px; border-radius: 2rem; font-size: 0.68rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header--inner">
+        <div class="header--brand">
+            <a class="header--brand-name" href="/dashboard">Ceylon Rides</a>
+            <a href="/dashboard" class="header--fleet">Dashboard</a>
+            <a href="/vehicles" class="header--fleet">Fleet</a>
+            <a href="/bookings" class="header--fleet">Bookings</a>
+            <a href="/payments" class="header--fleet">Payments</a>
+            <a href="/reviews" class="header--fleet">Reviews</a>
+            <a href="/users" class="header--fleet" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Users</a>
+            <a href="/admins" class="header--fleet" th:if="${user != null and (user.role == 'ADMIN' or user.role == 'SUPER_ADMIN')}">Admins</a>
+            <div class="profile-nav-wrap">
+                <a href="/profile" class="header--fleet active">Profile</a>
+                <div class="profile-nav-dropdown">
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+                        <div style="width:2.2rem;height:2.2rem;border-radius:50%;background:linear-gradient(135deg,#c8963e,#8b3a1a);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1rem;"
+                             th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
+                        <div>
+                            <div style="font-size:0.88rem;font-weight:600;color:#e8d5b0;" th:text="${user != null} ? ${user.fullName} : 'Guest'">Guest</div>
+                            <div style="font-size:0.72rem;color:#7a6a52;" th:text="${user != null} ? ${user.email} : ''"></div>
+                        </div>
+                    </div>
+                    <div style="border-top:1px solid #2a2015;padding-top:0.6rem;display:flex;flex-direction:column;gap:0.4rem;">
+                        <a href="/profile" style="font-size:0.8rem;color:#c8963e;text-decoration:none;padding:0.3rem 0;">✎ Edit Profile</a>
+                        <a href="/logout" style="font-size:0.8rem;color:#e05a5a;text-decoration:none;padding:0.3rem 0;">⏻ Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+            <a href="/profile" class="user-pill">
+                <div class="user-av" th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
+                <div>
+                    <span class="user-name" th:text="${user != null} ? ${user.fullName} : 'Guest'">Guest</span>
+                    <span class="user-role" th:text="${user != null} ? ${user.role} : ''">Role</span>
+                </div>
+            </a>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="page-title">My Profile</div>
+
+    <!-- Avatar + Name -->
+    <div class="avatar-card">
+        <div class="avatar-circle"
+             th:text="${user != null and user.fullName != null} ? ${#strings.substring(user.fullName,0,1).toUpperCase()} : 'U'">U</div>
+        <div class="avatar-info">
+            <div class="avatar-name" th:text="${user != null} ? ${user.fullName} : ''"></div>
+            <div class="avatar-email" th:text="${user != null} ? ${user.email} : ''"></div>
+            <div class="avatar-badges">
+                <span class="badge-role" th:text="${user != null} ? ${user.role} : ''"></span>
+                <span class="badge-member">Member</span>
+                <span class="badge-driver"
+                      th:if="${user != null and user.licenceNumber != null and !#strings.isEmpty(user.licenceNumber)}">Licensed Driver</span>
+            </div>
+        </div>
+        <a th:href="@{/users/edit/{id}(id=${user.userId})}" class="edit-btn">✎ Edit Profile</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">My Bookings</div>
+            <div class="stat-value" th:text="${totalBookings}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active Trips</div>
+            <div class="stat-value" th:text="${activeBookings}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Payments</div>
+            <div class="stat-value" th:text="${totalPayments}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-value rs" th:text="${'Rs ' + #numbers.formatInteger(totalSpent, 1, 'COMMA')}">Rs 0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Reviews</div>
+            <div class="stat-value" th:text="${totalReviews}">0</div>
+        </div>
+    </div>
+
+    <!-- Personal Info + Account Details -->
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-card-title">✦ Personal Information</div>
+            <div class="info-row">
+                <span class="info-key">Full Name</span>
+                <span class="info-val" th:text="${user.fullName}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Email</span>
+                <span class="info-val" th:text="${user.email}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Phone</span>
+                <span class="info-val"
+                      th:text="${user.phoneNumber != null and !#strings.isEmpty(user.phoneNumber)} ? ${user.phoneNumber} : '—'"></span>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-title">✦ Account Details</div>
+            <div class="info-row">
+                <span class="info-key">User ID</span>
+                <span class="info-val muted" th:text="${user.userId}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Role</span>
+                <span class="info-val" th:text="${user.role}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Driving Licence</span>
+                <span class="info-val"
+                      th:text="${user.licenceNumber != null and !#strings.isEmpty(user.licenceNumber)} ? ${user.licenceNumber} : '—'"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Status</span>
+                <span class="status-badge">Active</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
