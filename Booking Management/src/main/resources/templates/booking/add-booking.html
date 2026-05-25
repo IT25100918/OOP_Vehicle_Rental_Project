@@ -293,6 +293,7 @@
         .field-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(200,150,62,0.1); }
         .field-input::placeholder { color:var(--muted); }
         select.field-input { cursor:pointer; }
+        input[type="date"].field-input { color-scheme: dark; }
         .field-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
 
         .date-range-box { background:var(--card2); border:1px solid var(--border2); border-radius:0.8rem; padding:1rem 1.2rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color 0.2s; }
@@ -308,8 +309,7 @@
         .summary-panel { background:var(--card); border:1px solid var(--border); border-radius:1rem; overflow:hidden; position:sticky; top:88px; }
         .summary-vehicle-img { width:100%; height:200px; background:var(--card2); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; border-bottom:1px solid var(--border); }
         .summary-vehicle-img img { width:100%; height:100%; object-fit:contain; padding:0.5rem; }
-        .summary-vehicle-img .emoji { font-size:5rem; }
-        .summary-vehicle-name { padding:1.25rem 1.5rem 0; font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--text); }
+        .no-vehicle { text-align:center; padding:2rem 1rem; color:var(--muted); }        .summary-vehicle-name { padding:1.25rem 1.5rem 0; font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--text); }
         .summary-body { padding:1rem 1.5rem 1.5rem; }
         .summary-row { display:flex; justify-content:space-between; align-items:flex-start; padding:0.7rem 0; border-bottom:1px solid var(--border); }
         .summary-row:last-of-type { border-bottom:none; }
@@ -324,7 +324,6 @@
         .btn-continue { display:block; width:100%; background:linear-gradient(135deg,var(--gold),var(--spice)); color:#fff; border:none; border-radius:0.8rem; padding:1rem; font-size:1rem; font-weight:600; cursor:pointer; transition:opacity 0.2s; text-align:center; margin-top:1rem; text-decoration:none; }
         .btn-continue:hover { opacity:0.9; }
         .no-vehicle { text-align:center; padding:2rem; color:var(--muted); }
-        .no-vehicle .emoji { font-size:3rem; display:block; margin-bottom:0.75rem; opacity:0.3; }
         .back-btn { color:var(--muted); font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
         .back-btn:hover { color:var(--gold); }
 
@@ -437,7 +436,6 @@
 
                     <!-- Vehicle image & name -->
                     <div class="summary-vehicle-img" id="summaryImg">
-                        <div class="emoji">🚗</div>
                     </div>
                     <div class="summary-vehicle-name" id="summaryName">Select a vehicle</div>
 
@@ -464,7 +462,6 @@
 
                         <!-- Empty state -->
                         <div class="no-vehicle" id="emptyState">
-                            <span class="emoji">🚗</span>
                             <p>Select a vehicle and dates to see your booking summary</p>
                         </div>
 
@@ -512,7 +509,7 @@
             if (img && img !== 'none' && img !== '' && img.startsWith('http')) {
                 imgDiv.innerHTML = '<img src="' + img + '" alt="' + name + '" onerror="this.style.display=\'none\'">';
             } else {
-                imgDiv.innerHTML = '<div class="emoji">🚗</div>';
+                imgDiv.innerHTML = '';
             }
 
             document.getElementById('pricePerDay').textContent = 'Rs. ' + price.toLocaleString();
@@ -551,7 +548,7 @@
             }} else {
             // Reset
             document.getElementById('summaryName').textContent = 'Select a vehicle';
-            document.getElementById('summaryImg').innerHTML    = '<div class="emoji">🚗</div>';
+            document.getElementById('summaryImg').innerHTML = '';
             document.getElementById('priceRow').style.display  = 'none';
             document.getElementById('periodRow').style.display = 'none';
             document.getElementById('daysRow').style.display = 'none'; if(document.getElementById('taxRow')) document.getElementById('taxRow').style.display = 'none';
