@@ -62,9 +62,14 @@ public class ReviewController {
 
     @GetMapping("/reviews/edit/{reviewId}")
     public String showEditForm(@PathVariable String reviewId, Model model, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
-        model.addAttribute("user", session.getAttribute("loggedInUser"));
-        model.addAttribute("review", reviewService.findById(reviewId));
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        Review review = reviewService.findById(reviewId);
+        if (review == null) return "redirect:/reviews";
+        boolean isAdmin = "ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole());
+        if (!isAdmin && !loggedIn.getUserId().equals(review.getUserId())) return "redirect:/reviews";
+        model.addAttribute("user", loggedIn);
+        model.addAttribute("review", review);
         return "review/edit-review";
     }
 
@@ -74,7 +79,12 @@ public class ReviewController {
             @RequestParam String comment,
             @RequestParam int rating,
             HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        Review review = reviewService.findById(reviewId);
+        if (review == null) return "redirect:/reviews";
+        boolean isAdmin = "ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole());
+        if (!isAdmin && !loggedIn.getUserId().equals(review.getUserId())) return "redirect:/reviews";
         reviewService.updateReview(reviewId, comment, rating);
         return "redirect:/reviews";
     }
@@ -100,7 +110,12 @@ public class ReviewController {
 
     @PostMapping("/reviews/delete/{reviewId}")
     public String deleteReview(@PathVariable String reviewId, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        Review review = reviewService.findById(reviewId);
+        if (review == null) return "redirect:/reviews";
+        boolean isAdmin = "ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole());
+        if (!isAdmin && !loggedIn.getUserId().equals(review.getUserId())) return "redirect:/reviews";
         reviewService.deleteReview(reviewId);
         return "redirect:/reviews";
     }
