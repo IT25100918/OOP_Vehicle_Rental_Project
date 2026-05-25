@@ -24,8 +24,10 @@ public class BookingController {
         if (loggedIn == null) return "redirect:/login";
         if (!"ADMIN".equals(loggedIn.getRole()) && !"SUPER_ADMIN".equals(loggedIn.getRole()))
             return "redirect:/bookings";
+        Booking booking = bookingService.findById(bookingId);
+        if (booking == null) return "redirect:/bookings";
         model.addAttribute("user", loggedIn);
-        model.addAttribute("booking", bookingService.findById(bookingId));
+        model.addAttribute("booking", booking);
         return "booking/edit-booking";
     }
 
@@ -121,7 +123,12 @@ public class BookingController {
 
     @PostMapping("/bookings/cancel/{bookingId}")
     public String cancelBooking(@PathVariable String bookingId, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null) return "redirect:/login";
+        Booking booking = bookingService.findById(bookingId);
+        if (booking == null) return "redirect:/bookings";
+        boolean isAdmin = "ADMIN".equals(loggedIn.getRole()) || "SUPER_ADMIN".equals(loggedIn.getRole());
+        if (!isAdmin && !loggedIn.getUserId().equals(booking.getUserId())) return "redirect:/bookings";
         bookingService.cancelBooking(bookingId);
         return "redirect:/bookings";
     }
