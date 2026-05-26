@@ -13,7 +13,7 @@ public class Booking {
     private String endDate;
     private String status;
     private double totalPrice;
-
+//abstraction is used (this hides the internal logic)
     public Booking() {}
 
     public Booking(String bookingId, String userId, String vehicleId,
@@ -29,7 +29,8 @@ public class Booking {
         this.status      = status;
         this.totalPrice  = totalPrice;
     }
-
+//encapsulation
+//getters and setters are used
     public String getBookingId()   { return bookingId; }
     public void setBookingId(String bookingId) { this.bookingId = bookingId; }
     
