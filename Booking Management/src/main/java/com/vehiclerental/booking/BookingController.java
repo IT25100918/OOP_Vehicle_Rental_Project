@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 
+//polymorphism is used to override the abstract methods of the parent class
+//get attribute is used and its encapsulation used here ( the controller manages them internally coz callers (the browser) never deal with sessions directly
 @Controller
 public class BookingController {
 
