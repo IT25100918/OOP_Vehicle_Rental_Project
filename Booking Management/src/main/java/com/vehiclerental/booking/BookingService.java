@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+
 @Service
 public class BookingService {
 
@@ -32,7 +33,7 @@ public class BookingService {
 
     public boolean updateBooking(String bookingId, String startDate, String endDate,
                                  String userName, String vehicleName, String status) {
-        List<Booking> bookings = getAllBookings();
+        List<Booking> bookings = getAllBookings();//encapsulation
         boolean found = false;
         for (Booking b : bookings) {
             if (b.getBookingId().equals(bookingId)) {
@@ -56,6 +57,8 @@ public class BookingService {
         return found;
     }
 
+
+    //abstraction is used coz of createBooking, confirmBooking, cancelBooking, completeBooking. The controller only calls these - it has no idea about file reading, list iteration, or sorting algorithms.
     public boolean createBooking(String userId, String userName, String vehicleId, String startDate, String endDate) {
         return createBookingAndGetId(userId, userName, vehicleId, startDate, endDate) != null;
     }
